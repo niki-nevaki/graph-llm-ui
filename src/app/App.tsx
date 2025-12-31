@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import { Route, Routes } from "react-router-dom";
-import { AppHeader } from "./components/AppHeader";
-import { GraphEditorPage } from "./pages/GraphPage";
-import { HomePage } from "./pages/HomePage";
+import { GraphEditorPage } from "../pages/GraphPage";
+import { HomePage } from "../pages/HomePage";
+import { AppHeader } from "./layout/AppHeader";
 
 export default function App() {
   const userName = "Username"; // позже заменишь на реального юзера из стора/авторизации

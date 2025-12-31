@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
-import { FlowCanvas } from "../features/FlowCanvas";
-import { NodePalette } from "../features/NodePalette";
+import { FlowCanvas } from "../features/graph-editor/ui/FlowCanvas";
+import { NodePalette } from "../features/graph-editor/ui/NodePalette";
 
 export function GraphEditorPage() {
   return (

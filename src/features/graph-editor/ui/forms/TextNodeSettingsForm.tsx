@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { TextNodeData } from "../../types/types";
+import type { TextNodeData } from "../../../../types/types";
 
 export function TextNodeSettingsForm(props: {
   data: TextNodeData;
@@ -16,7 +16,7 @@ export function TextNodeSettingsForm(props: {
 
   return (
     <Stack spacing={1.25}>
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Mode</InputLabel>
         <Select
           label="Mode"
@@ -31,7 +31,7 @@ export function TextNodeSettingsForm(props: {
       {data.config.mode === "inline" ? (
         <TextField
           label="Text"
-          size="small"
+          size="medium"
           fullWidth
           multiline
           minRows={10}
@@ -41,7 +41,7 @@ export function TextNodeSettingsForm(props: {
       ) : (
         <TextField
           label="File name"
-          size="small"
+          size="medium"
           fullWidth
           value={data.config.fileName}
           onChange={(e) => onChange({ fileName: e.target.value })}

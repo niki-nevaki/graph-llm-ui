@@ -5,7 +5,7 @@ import TelegramIcon from "@mui/icons-material/Telegram";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import type { ComponentType } from "react";
 
-import type { NodeKind } from "../types/types";
+import type { NodeKind } from "../../../../types/types";
 
 export type NodeSpec = {
   kind: NodeKind;

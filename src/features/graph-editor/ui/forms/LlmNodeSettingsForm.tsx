@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { LlmNodeData } from "../../types/types";
+import type { LlmNodeData } from "../../../../types/types";
 
 export function LlmNodeSettingsForm(props: {
   data: LlmNodeData;
@@ -16,7 +16,7 @@ export function LlmNodeSettingsForm(props: {
 
   return (
     <Stack spacing={1.25}>
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Provider</InputLabel>
         <Select
           label="Provider"
@@ -31,7 +31,7 @@ export function LlmNodeSettingsForm(props: {
 
       <TextField
         label="API key"
-        size="small"
+        size="medium"
         type="password"
         fullWidth
         value={data.config.apiKey}
@@ -40,7 +40,7 @@ export function LlmNodeSettingsForm(props: {
 
       <TextField
         label="Model"
-        size="small"
+        size="medium"
         fullWidth
         value={data.config.model}
         onChange={(e) => onChange({ model: e.target.value })}
@@ -48,7 +48,7 @@ export function LlmNodeSettingsForm(props: {
 
       <TextField
         label="System prompt"
-        size="small"
+        size="medium"
         fullWidth
         multiline
         minRows={6}
@@ -59,7 +59,7 @@ export function LlmNodeSettingsForm(props: {
       <Stack direction="row" spacing={1}>
         <TextField
           label="Temperature"
-          size="small"
+          size="medium"
           type="number"
           value={data.config.temperature}
           onChange={(e) => onChange({ temperature: Number(e.target.value) })}
@@ -68,7 +68,7 @@ export function LlmNodeSettingsForm(props: {
         />
         <TextField
           label="Max tokens"
-          size="small"
+          size="medium"
           type="number"
           value={data.config.maxTokens}
           onChange={(e) => onChange({ maxTokens: Number(e.target.value) })}

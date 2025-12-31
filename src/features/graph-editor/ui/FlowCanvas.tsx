@@ -16,15 +16,14 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useCallback, useMemo, useState } from "react";
 
-import { AppNode } from "../flow/AppNode";
-import { useColorMode } from "../theme/ColorModeProvider";
 import {
   createNodeData,
   isNodeKind,
   type AppNodeData,
   type NodeKind,
-} from "../types/types";
+} from "../../../types/types";
 import { NodeInspector } from "./NodeInspector";
+import { AppNode } from "./nodes/AppNode";
 
 const nodeTypes = { appNode: AppNode };
 
@@ -32,13 +31,13 @@ const initialNodes: Node<AppNodeData>[] = [
   {
     id: "1",
     type: "appNode",
-    position: { x: 160, y: 140 },
+    position: { x: 160, y: 120 },
     data: createNodeData("text"),
   },
   {
     id: "2",
     type: "appNode",
-    position: { x: 520, y: 140 },
+    position: { x: 520, y: 120 },
     data: createNodeData("llm"),
   },
 ];
@@ -54,8 +53,10 @@ export function FlowCanvas() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  // дефолт шире (в 2 раза относительно прежнего)
   const [inspectorWidth, setInspectorWidth] = useState(900);
-  const { mode } = useColorMode();
+  const [inspectorOpen, setInspectorOpen] = useState(true);
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -103,6 +104,7 @@ export function FlowCanvas() {
 
       setNodes((nds) => nds.concat(newNode));
       setSelectedNodeId(newNode.id);
+      setInspectorOpen(true);
     },
     [screenToFlowPosition, setNodes]
   );
@@ -128,14 +130,20 @@ export function FlowCanvas() {
   );
 
   return (
-    <Box sx={{ display: "flex", height: "100%", width: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       {/* Canvas */}
-      <Box sx={{ flex: 1, minWidth: 0, height: "100%" }}>
+      <Box sx={{ flex: 1, minWidth: 0, height: "100%", overflow: "hidden" }}>
         <ReactFlow
           nodeTypes={nodeTypes}
           nodes={nodes}
           edges={edges}
-          colorMode={mode}
           onConnect={onConnect}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -146,7 +154,10 @@ export function FlowCanvas() {
             type: "smoothstep",
             markerEnd: { type: MarkerType.ArrowClosed },
           }}
-          onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+          onNodeClick={(_, node) => {
+            setSelectedNodeId(node.id);
+            setInspectorOpen(true);
+          }}
           onPaneClick={() => setSelectedNodeId(null)}
         >
           <Background />
@@ -155,13 +166,13 @@ export function FlowCanvas() {
         </ReactFlow>
       </Box>
 
-      {/* Right inspector */}
+      {/* Inspector */}
       <NodeInspector
-        open={!!selectedNode}
+        open={inspectorOpen}
         width={inspectorWidth}
         selectedNode={selectedNode}
         allNodes={allNodesForInspector}
-        onClose={() => setSelectedNodeId(null)}
+        onClose={() => setInspectorOpen(false)}
         onUpdate={updateNodeData}
         onWidthChange={setInspectorWidth}
       />

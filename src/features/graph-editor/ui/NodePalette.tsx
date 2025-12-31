@@ -16,8 +16,8 @@ import {
   Typography,
 } from "@mui/material";
 
-import { NODE_SPECS } from "../flow/nodeSpecs";
-import type { NodeKind } from "../types/types";
+import type { NodeKind } from "../../../types/types";
+import { NODE_SPECS } from "./nodes/nodeSpecs";
 
 const ALL_KINDS = Object.keys(NODE_SPECS) as NodeKind[];
 
@@ -46,7 +46,7 @@ export function NodePalette() {
         </Typography>
 
         <TextField
-          size="small"
+          size="medium"
           fullWidth
           placeholder="Search nodes…"
           InputProps={{

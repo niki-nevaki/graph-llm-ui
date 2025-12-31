@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { AgentNodeData } from "../../types/types";
+import type { AgentNodeData } from "../../../../types/types";
 
 export function AgentNodeSettingsForm(props: {
   data: AgentNodeData;
@@ -17,7 +17,7 @@ export function AgentNodeSettingsForm(props: {
 
   return (
     <Stack spacing={1.25}>
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Mode</InputLabel>
         <Select
           label="Mode"
@@ -30,7 +30,7 @@ export function AgentNodeSettingsForm(props: {
         </Select>
       </FormControl>
 
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>LLM node</InputLabel>
         <Select
           label="LLM node"
@@ -50,7 +50,7 @@ export function AgentNodeSettingsForm(props: {
 
       <TextField
         label="Instructions"
-        size="small"
+        size="medium"
         fullWidth
         multiline
         minRows={10}
@@ -60,7 +60,7 @@ export function AgentNodeSettingsForm(props: {
 
       <TextField
         label="Max steps"
-        size="small"
+        size="medium"
         type="number"
         value={data.config.maxSteps}
         onChange={(e) => onChange({ maxSteps: Number(e.target.value) })}

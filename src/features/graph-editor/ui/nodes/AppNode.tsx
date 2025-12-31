@@ -1,8 +1,8 @@
 import { Box, Chip, Paper, Typography } from "@mui/material";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { memo } from "react";
-import { validateNode, type AppNodeData } from "../types/types";
-import { NODE_SPECS } from "./nodeSpecs";
+import { NODE_SPECS } from "../../../../flow/nodeSpecs";
+import { validateNode, type AppNodeData } from "../../../../types/types";
 
 const handleStyle: React.CSSProperties = {
   width: 12,
@@ -60,7 +60,7 @@ export const AppNode = memo(function AppNode(props: NodeProps) {
         </Box>
 
         <Chip
-          size="small"
+          size="medium"
           label={v.ok ? "ok" : `${v.issues.length}`}
           color={v.ok ? "success" : "warning"}
           variant="outlined"

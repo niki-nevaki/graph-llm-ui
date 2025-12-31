@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { TgBotNodeData } from "../../types/types";
+import type { TgBotNodeData } from "../../../../types/types";
 
 export function TgBotNodeSettingsForm(props: {
   data: TgBotNodeData;
@@ -16,7 +16,7 @@ export function TgBotNodeSettingsForm(props: {
 
   return (
     <Stack spacing={1.25}>
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Direction</InputLabel>
         <Select
           label="Direction"
@@ -31,7 +31,7 @@ export function TgBotNodeSettingsForm(props: {
 
       <TextField
         label="Bot token"
-        size="small"
+        size="medium"
         fullWidth
         type="password"
         value={data.config.token}
@@ -40,13 +40,13 @@ export function TgBotNodeSettingsForm(props: {
 
       <TextField
         label="Chat ID"
-        size="small"
+        size="medium"
         fullWidth
         value={data.config.chatId}
         onChange={(e) => onChange({ chatId: e.target.value })}
       />
 
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Parse mode</InputLabel>
         <Select
           label="Parse mode"

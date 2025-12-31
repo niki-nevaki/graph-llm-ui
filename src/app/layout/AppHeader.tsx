@@ -1,5 +1,5 @@
 import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
-import { useColorMode } from "../theme/ColorModeProvider";
+import { useColorMode } from "../providers/ColorModeProvider";
 
 export function AppHeader({ userName }: { userName: string }) {
   const { mode, toggleMode } = useColorMode();
@@ -32,7 +32,7 @@ export function AppHeader({ userName }: { userName: string }) {
 
         {/* правый угол: слева-направо toggle + username */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton aria-label={nextLabel} onClick={toggleMode} size="small">
+          <IconButton aria-label={nextLabel} onClick={toggleMode} size="medium">
             <span style={{ fontSize: 18, lineHeight: 1 }}>{emoji}</span>
           </IconButton>
 

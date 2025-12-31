@@ -6,7 +6,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { RelDbNodeData } from "../../types/types";
+import type { RelDbNodeData } from "../../../../types/types";
 
 export function RelDbNodeSettingsForm(props: {
   data: RelDbNodeData;
@@ -16,7 +16,7 @@ export function RelDbNodeSettingsForm(props: {
 
   return (
     <Stack spacing={1.25}>
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Driver</InputLabel>
         <Select
           label="Driver"
@@ -33,7 +33,7 @@ export function RelDbNodeSettingsForm(props: {
       <Stack direction="row" spacing={1}>
         <TextField
           label="Host"
-          size="small"
+          size="medium"
           fullWidth
           value={data.config.host}
           onChange={(e) => onChange({ host: e.target.value })}
@@ -41,7 +41,7 @@ export function RelDbNodeSettingsForm(props: {
         />
         <TextField
           label="Port"
-          size="small"
+          size="medium"
           type="number"
           value={data.config.port}
           onChange={(e) => onChange({ port: Number(e.target.value) })}
@@ -52,7 +52,7 @@ export function RelDbNodeSettingsForm(props: {
 
       <TextField
         label="Database"
-        size="small"
+        size="medium"
         fullWidth
         value={data.config.database}
         onChange={(e) => onChange({ database: e.target.value })}
@@ -62,7 +62,7 @@ export function RelDbNodeSettingsForm(props: {
       <Stack direction="row" spacing={1}>
         <TextField
           label="User"
-          size="small"
+          size="medium"
           fullWidth
           value={data.config.user}
           onChange={(e) => onChange({ user: e.target.value })}
@@ -70,7 +70,7 @@ export function RelDbNodeSettingsForm(props: {
         />
         <TextField
           label="Password"
-          size="small"
+          size="medium"
           type="password"
           fullWidth
           value={data.config.password}
@@ -79,7 +79,7 @@ export function RelDbNodeSettingsForm(props: {
         />
       </Stack>
 
-      <FormControl size="small" fullWidth>
+      <FormControl size="medium" fullWidth>
         <InputLabel>Operation</InputLabel>
         <Select
           label="Operation"
@@ -97,7 +97,7 @@ export function RelDbNodeSettingsForm(props: {
       {data.config.operation === "query" ? (
         <TextField
           label="SQL"
-          size="small"
+          size="medium"
           fullWidth
           multiline
           minRows={10}
@@ -107,7 +107,7 @@ export function RelDbNodeSettingsForm(props: {
       ) : (
         <TextField
           label="Table"
-          size="small"
+          size="medium"
           fullWidth
           value={data.config.table}
           onChange={(e) => onChange({ table: e.target.value })}

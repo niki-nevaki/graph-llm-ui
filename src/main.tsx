@@ -4,9 +4,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { BrowserRouter } from "react-router";
-import App from "./App";
+import App from "./app/App";
+import { ColorModeProvider } from "./app/providers/ColorModeProvider";
 import "./index.css";
-import { ColorModeProvider } from "./theme/ColorModeProvider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
