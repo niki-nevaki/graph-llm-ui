@@ -1,0 +1,9 @@
+@layer theme, base, mui, components, utilities;
+@import "tailwindcss";
+
+/* Твои глобальные стили — лучше класть в layer components */
+@layer components {
+  .app-shell {
+    height: 100vh;
+  }
+}
