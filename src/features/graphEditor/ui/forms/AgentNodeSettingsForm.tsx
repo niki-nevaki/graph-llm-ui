@@ -6,12 +6,12 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { AgentNodeData } from "../../../../types/types";
+import type { AgentDefinitionNode } from "../../../../domain/workflow";
 
 export function AgentNodeSettingsForm(props: {
-  data: AgentNodeData;
+  data: AgentDefinitionNode;
   llmOptions: Array<{ id: string; name: string }>;
-  onChange: (patch: Partial<AgentNodeData["config"]>) => void;
+  onChange: (patch: Partial<AgentDefinitionNode["config"]>) => void;
 }) {
   const { data, llmOptions, onChange } = props;
 

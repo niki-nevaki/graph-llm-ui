@@ -6,11 +6,11 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { TgBotNodeData } from "../../../../types/types";
+import type { TgBotDefinitionNode } from "../../../../domain/workflow";
 
 export function TgBotNodeSettingsForm(props: {
-  data: TgBotNodeData;
-  onChange: (patch: Partial<TgBotNodeData["config"]>) => void;
+  data: TgBotDefinitionNode;
+  onChange: (patch: Partial<TgBotDefinitionNode["config"]>) => void;
 }) {
   const { data, onChange } = props;
 

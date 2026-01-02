@@ -1,21 +1,17 @@
-import { Box } from "@mui/material";
 import { Route, Routes } from "react-router-dom";
-import { GraphEditorPage } from "../pages/GraphPage";
+import { GraphEditorPage } from "../pages/GraphEditorPage";
 import { HomePage } from "../pages/HomePage";
-import { AppHeader } from "./layout/AppHeader";
+import { AppShell } from "./layout/AppShell";
 
 export default function App() {
   const userName = "Username"; // позже заменишь на реального юзера из стора/авторизации
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <AppHeader userName={userName} />
-      <Box sx={{ flex: 1, minHeight: 0 }}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/graph" element={<GraphEditorPage />} />
-        </Routes>
-      </Box>
-    </Box>
+    <AppShell userName={userName}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/graph" element={<GraphEditorPage />} />
+      </Routes>
+    </AppShell>
   );
 }

@@ -6,11 +6,11 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { LlmNodeData } from "../../../../types/types";
+import type { LlmDefinitionNode } from "../../../../domain/workflow";
 
 export function LlmNodeSettingsForm(props: {
-  data: LlmNodeData;
-  onChange: (patch: Partial<LlmNodeData["config"]>) => void;
+  data: LlmDefinitionNode;
+  onChange: (patch: Partial<LlmDefinitionNode["config"]>) => void;
 }) {
   const { data, onChange } = props;
 

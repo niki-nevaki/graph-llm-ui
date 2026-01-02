@@ -6,11 +6,11 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { TextNodeData } from "../../../../types/types";
+import type { TextDefinitionNode } from "../../../../domain/workflow";
 
 export function TextNodeSettingsForm(props: {
-  data: TextNodeData;
-  onChange: (patch: Partial<TextNodeData["config"]>) => void;
+  data: TextDefinitionNode;
+  onChange: (patch: Partial<TextDefinitionNode["config"]>) => void;
 }) {
   const { data, onChange } = props;
 

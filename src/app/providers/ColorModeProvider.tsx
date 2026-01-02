@@ -1,7 +1,8 @@
 import type { PaletteMode } from "@mui/material";
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import * as React from "react";
 
+import { createAppTheme } from "../theme/theme";
 type ColorModeContextValue = {
   mode: PaletteMode;
   toggleMode: () => void;
@@ -46,10 +47,7 @@ export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   }, [setMode]);
 
   const theme = React.useMemo(() => {
-    return createTheme({
-      palette: { mode },
-      // сюда можно позже добавить ваши overrides
-    });
+    return createAppTheme(mode);
   }, [mode]);
 
   const value = React.useMemo(

@@ -6,11 +6,11 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import type { RelDbNodeData } from "../../../../types/types";
+import type { RelDbDefinitionNode } from "../../../../domain/workflow";
 
 export function RelDbNodeSettingsForm(props: {
-  data: RelDbNodeData;
-  onChange: (patch: Partial<RelDbNodeData["config"]>) => void;
+  data: RelDbDefinitionNode;
+  onChange: (patch: Partial<RelDbDefinitionNode["config"]>) => void;
 }) {
   const { data, onChange } = props;
 

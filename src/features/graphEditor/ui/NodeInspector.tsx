@@ -13,17 +13,17 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { validateNode } from "../../../types/types";
+import { validateNode } from "../../../domain/workflow";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 
 import type {
-  AgentNodeData,
-  AppNodeData,
-  LlmNodeData,
-  RelDbNodeData,
-  TextNodeData,
-  TgBotNodeData,
-} from "../../../types/types";
+  AgentDefinitionNode,
+  DefinitionNode,
+  LlmDefinitionNode,
+  RelDbDefinitionNode,
+  TextDefinitionNode,
+  TgBotDefinitionNode,
+} from "../../../domain/workflow";
 
 import { AgentNodeSettingsForm } from "./forms/AgentNodeSettingsForm";
 import { LlmNodeSettingsForm } from "./forms/LlmNodeSettingsForm";
@@ -37,11 +37,11 @@ type Props = {
   minWidth?: number;
   maxWidth?: number;
 
-  selectedNode: { id: string; data: AppNodeData } | null;
-  allNodes: Array<{ id: string; data: AppNodeData }>;
+  selectedNode: { id: string; data: DefinitionNode } | null;
+  allNodes: Array<{ id: string; data: DefinitionNode }>;
 
   onClose: () => void;
-  onUpdate: (nodeId: string, nextData: AppNodeData) => void;
+  onUpdate: (nodeId: string, nextData: DefinitionNode) => void;
   onWidthChange: (w: number) => void;
 };
 
@@ -183,15 +183,15 @@ export function NodeInspector({
           const Icon = spec.Icon;
           const v = validateNode(data);
 
-          const update = (patch: Partial<AppNodeData>) => {
-            onUpdate(id, { ...data, ...patch } as AppNodeData);
+          const update = (patch: Partial<DefinitionNode>) => {
+            onUpdate(id, { ...data, ...patch } as DefinitionNode);
           };
 
-          const updateConfig = (patch: Partial<AppNodeData["config"]>) => {
+          const updateConfig = (patch: Partial<DefinitionNode["config"]>) => {
             onUpdate(id, {
               ...data,
               config: { ...data.config, ...patch },
-            } as AppNodeData);
+            } as DefinitionNode);
           };
 
           return (
@@ -282,8 +282,15 @@ export function NodeInspector({
                     <TextField
                       label="Description"
                       size="medium"
-                      value={data.description ?? ""}
-                      onChange={(e) => update({ description: e.target.value })}
+                      value={data.meta?.description ?? ""}
+                      onChange={(e) =>
+                        update({
+                          meta: {
+                            ...data.meta,
+                            description: e.target.value,
+                          },
+                        })
+                      }
                       fullWidth
                       multiline
                       minRows={3}
@@ -332,9 +339,9 @@ export function NodeInspector({
 }
 
 function SettingsForm(props: {
-  data: AppNodeData;
+  data: DefinitionNode;
   llmOptions: Array<{ id: string; name: string }>;
-  updateConfig: (patch: any) => void;
+  updateConfig: (patch: Partial<DefinitionNode["config"]>) => void;
 }) {
   const { data, llmOptions, updateConfig } = props;
 
@@ -342,35 +349,35 @@ function SettingsForm(props: {
     case "text":
       return (
         <TextNodeSettingsForm
-          data={data as TextNodeData}
+          data={data as TextDefinitionNode}
           onChange={updateConfig}
         />
       );
     case "tgBot":
       return (
         <TgBotNodeSettingsForm
-          data={data as TgBotNodeData}
+          data={data as TgBotDefinitionNode}
           onChange={updateConfig}
         />
       );
     case "relDb":
       return (
         <RelDbNodeSettingsForm
-          data={data as RelDbNodeData}
+          data={data as RelDbDefinitionNode}
           onChange={updateConfig}
         />
       );
     case "llm":
       return (
         <LlmNodeSettingsForm
-          data={data as LlmNodeData}
+          data={data as LlmDefinitionNode}
           onChange={updateConfig}
         />
       );
     case "agent":
       return (
         <AgentNodeSettingsForm
-          data={data as AgentNodeData}
+          data={data as AgentDefinitionNode}
           llmOptions={llmOptions}
           onChange={updateConfig}
         />

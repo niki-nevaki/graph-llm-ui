@@ -1,22 +1,13 @@
-import GlobalStyles from "@mui/material/GlobalStyles";
-import { StyledEngineProvider } from "@mui/material/styles";
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import { BrowserRouter } from "react-router";
 import App from "./app/App";
-import { ColorModeProvider } from "./app/providers/ColorModeProvider";
-import "./index.css";
+import { AppProviders } from "./app/providers/AppProviders";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <StyledEngineProvider enableCssLayer>
-        <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
-        <ColorModeProvider>
-          <App />
-        </ColorModeProvider>
-      </StyledEngineProvider>
-    </BrowserRouter>
+    <AppProviders>
+      <App />
+    </AppProviders>
   </React.StrictMode>
 );

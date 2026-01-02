@@ -1,8 +1,8 @@
 import { Box, Chip, Paper, Typography } from "@mui/material";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { memo } from "react";
-import { NODE_SPECS } from "../../../../flow/nodeSpecs";
-import { validateNode, type AppNodeData } from "../../../../types/types";
+import { validateNode, type DefinitionNode } from "../../../../domain/workflow";
+import { NODE_SPECS } from "./nodeSpecs";
 
 const handleStyle: React.CSSProperties = {
   width: 12,
@@ -13,8 +13,8 @@ const handleStyle: React.CSSProperties = {
   zIndex: 10,
 };
 
-export const AppNode = memo(function AppNode(props: NodeProps) {
-  const data = props.data as AppNodeData;
+export const AppNode = memo(function AppNode(props: NodeProps<DefinitionNode>) {
+  const data = props.data;
   const spec = NODE_SPECS[data.kind];
   const Icon = spec.Icon;
 

@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import type { NodeKind } from "../../../types/types";
+import type { NodeKind } from "../../../domain/workflow";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 
 const ALL_KINDS = Object.keys(NODE_SPECS) as NodeKind[];
