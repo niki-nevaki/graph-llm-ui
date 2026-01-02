@@ -1,64 +1,43 @@
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { Box, Button, IconButton, Stack, TextField } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import type { ToolDefinitionNode } from "../../../../domain/workflow";
+import { TOOL_OPTIONS } from "../../model/toolOptions";
+import { HttpRequestToolForm } from "./tool/HttpRequestToolForm";
+import { GoogleSheetsToolForm } from "./tool/GoogleSheetsToolForm";
 
 export function ToolNodeSettingsForm(props: {
   data: ToolDefinitionNode;
   onChange: (patch: Partial<ToolDefinitionNode["config"]>) => void;
 }) {
   const { data, onChange } = props;
-  const fields = data.config.fields ?? [];
-
-  const updateField = (index: number, patch: { key?: string; value?: string }) => {
-    onChange({
-      fields: fields.map((field, i) =>
-        i === index ? { ...field, ...patch } : field
-      ),
-    });
-  };
-
-  const addField = () => {
-    onChange({ fields: fields.concat({ key: "", value: "" }) });
-  };
-
-  const removeField = (index: number) => {
-    onChange({ fields: fields.filter((_, i) => i !== index) });
-  };
+  const toolId = data.config.toolId;
+  const toolName = data.config.toolName;
+  const optionById = TOOL_OPTIONS.find((option) => option.id === toolId);
+  const optionByName = TOOL_OPTIONS.find((option) => option.title === toolName);
+  const resolvedToolId =
+    optionByName && optionById && optionByName.id !== optionById.id
+      ? optionByName.id
+      : optionById?.id ?? optionByName?.id ?? toolId;
 
   return (
-    <Stack spacing={1.25}>
-      {fields.map((field, index) => (
-        <Box
-          key={`${field.key}-${index}`}
-          sx={{ display: "flex", gap: 1, alignItems: "center" }}
-        >
-          <TextField
-            label="Ключ"
-            size="medium"
-            value={field.key}
-            onChange={(e) => updateField(index, { key: e.target.value })}
-            sx={{ flex: 1 }}
-          />
-          <TextField
-            label="Значение"
-            size="medium"
-            value={field.value}
-            onChange={(e) => updateField(index, { value: e.target.value })}
-            sx={{ flex: 1 }}
-          />
-          <IconButton
-            aria-label="Удалить поле"
-            onClick={() => removeField(index)}
-            size="small"
-          >
-            <DeleteOutlineIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      ))}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <TextField
+        label="Инструмент"
+        size="medium"
+        value={data.config.toolName}
+        fullWidth
+        InputProps={{ readOnly: true }}
+        inputProps={{ "data-field-path": "config.toolName" }}
+      />
 
-      <Button variant="outlined" size="medium" onClick={addField}>
-        Добавить поле
-      </Button>
-    </Stack>
+      {resolvedToolId === "http_request" ? (
+        <HttpRequestToolForm data={data} onChange={onChange} />
+      ) : resolvedToolId === "google_sheets" ? (
+        <GoogleSheetsToolForm data={data} onChange={onChange} />
+      ) : (
+        <Typography variant="caption" color="text.secondary">
+          Метаданные инструмента будут доступны в следующем шаге.
+        </Typography>
+      )}
+    </Box>
   );
 }

@@ -1,13 +1,14 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { validateNode, type DefinitionNode } from "../../../../domain/workflow";
+import { useGraphRuntime } from "../../model/runtimeContext";
 import { NODE_SPECS } from "./nodeSpecs";
 
 const handleStyle: React.CSSProperties = {
-  width: 12,
-  height: 12,
+  width: 16,
+  height: 16,
   borderRadius: 999,
   border: "1px solid rgba(0,0,0,0.25)",
   background: "#fff",
@@ -39,9 +40,40 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
   const spec = NODE_SPECS[data.kind];
   const Icon = spec.Icon;
   const isToolNode = data.kind === "tool";
+  const { nodeStatuses, nodeIssues } = useGraphRuntime();
+  const runtimeStatus = nodeStatuses[props.id];
+  const issues = nodeIssues[props.id] ?? [];
 
   const v = validateNode(data);
-  const statusColor = v.ok ? "success.main" : "warning.main";
+  const issueSeverity = useMemo<"error" | "warning" | null>(() => {
+    if (issues.some((issue) => issue.severity === "error")) return "error";
+    if (issues.some((issue) => issue.severity === "warning")) return "warning";
+    return null;
+  }, [issues]);
+
+  const statusColor = (() => {
+    if (runtimeStatus === "failed") return "error.main";
+    if (runtimeStatus === "running") return "info.main";
+    if (runtimeStatus === "succeeded") return "success.main";
+    if (runtimeStatus === "cancelled") return "warning.main";
+    if (issueSeverity === "error") return "error.main";
+    if (issueSeverity === "warning") return "warning.main";
+    return v.ok ? "success.main" : "warning.main";
+  })();
+
+  const borderColor = issueSeverity
+    ? issueSeverity === "error"
+      ? "error.main"
+      : "warning.main"
+    : props.selected
+    ? "primary.main"
+    : "divider";
+
+  const badgeColor = issueSeverity
+    ? issueSeverity === "error"
+      ? "error.main"
+      : "warning.main"
+    : undefined;
 
   const onAddTool = useCallback(
     (event: React.MouseEvent) => {
@@ -64,10 +96,32 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
           display: "grid",
           placeItems: "center",
           border: "1px solid",
-          borderColor: props.selected ? "primary.main" : "divider",
+          borderColor,
           opacity: data.enabled ? 1 : 0.55,
+          animation:
+            runtimeStatus === "running" ? "node-pulse 1.4s ease-out infinite" : "none",
         }}
       >
+        {badgeColor ? (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              bgcolor: badgeColor,
+              color: "#fff",
+              fontSize: 10,
+              display: "grid",
+              placeItems: "center",
+              boxShadow: 1,
+            }}
+          >
+            !
+          </Box>
+        ) : null}
         <Box
           sx={{
             width: 52,
@@ -106,10 +160,33 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
         borderRadius: 2,
         overflow: "visible",
         border: "1px solid",
-        borderColor: props.selected ? "primary.main" : "divider",
+        borderColor,
         opacity: data.enabled ? 1 : 0.55,
+        animation:
+          runtimeStatus === "running" ? "node-pulse 1.4s ease-out infinite" : "none",
       }}
     >
+      {badgeColor ? (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 6,
+            right: 6,
+            width: 16,
+            height: 16,
+            borderRadius: "50%",
+            bgcolor: badgeColor,
+            color: "#fff",
+            fontSize: 10,
+            display: "grid",
+            placeItems: "center",
+            boxShadow: 1,
+            zIndex: 2,
+          }}
+        >
+          !
+        </Box>
+      ) : null}
       <Box
         sx={{ display: "flex", alignItems: "center", gap: 1, px: 1.25, py: 1 }}
       >
@@ -184,7 +261,8 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
               position: "absolute",
               left: "50%",
               top: "100%",
-              transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px)`,
+              transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(1)`,
+              transformOrigin: "center",
               width: 22,
               height: 22,
               border: "1px solid",
@@ -195,7 +273,13 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
               borderRadius: 0,
               pointerEvents: "all",
               zIndex: 5,
-              "&:hover": { bgcolor: "action.hover" },
+              "&:hover": {
+                bgcolor: "action.hover",
+                transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(var(--motion-scale-hover))`,
+              },
+              "&:active": {
+                transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(var(--motion-scale-press))`,
+              },
             }}
           >
             <AddIcon fontSize="inherit" />

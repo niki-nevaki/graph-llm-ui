@@ -36,6 +36,7 @@ export function TgBotNodeSettingsForm(props: {
         type="password"
         value={data.config.token}
         onChange={(e) => onChange({ token: e.target.value })}
+        inputProps={{ "data-field-path": "config.token" }}
       />
 
       <TextField
@@ -44,6 +45,7 @@ export function TgBotNodeSettingsForm(props: {
         fullWidth
         value={data.config.chatId}
         onChange={(e) => onChange({ chatId: e.target.value })}
+        inputProps={{ "data-field-path": "config.chatId" }}
       />
 
       <FormControl size="medium" fullWidth>

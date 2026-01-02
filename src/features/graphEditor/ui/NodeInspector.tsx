@@ -1,7 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
-  Button,
   Divider,
   FormControlLabel,
   IconButton,
@@ -33,6 +32,8 @@ import { RelDbNodeSettingsForm } from "./forms/RelDbNodeSettingsForm";
 import { TextNodeSettingsForm } from "./forms/TextNodeSettingsForm";
 import { TgBotNodeSettingsForm } from "./forms/TgBotNodeSettingsForm";
 import { ToolNodeSettingsForm } from "./forms/ToolNodeSettingsForm";
+import { ToolPickerForm } from "./forms/ToolPickerForm";
+import type { ToolOption } from "../model/toolOptions";
 
 type Props = {
   open: boolean;
@@ -41,9 +42,9 @@ type Props = {
   maxWidth?: number;
 
   selectedNode: { id: string; data: DefinitionNode } | null;
-  draftActions?: {
-    confirmLabel: string;
-    onConfirm: () => void;
+  focusFieldPath?: string | null;
+  toolDraft?: {
+    onSelect: (option: ToolOption) => void;
     onCancel: () => void;
   };
 
@@ -60,9 +61,14 @@ function TabPanel(props: {
   value: number;
   index: number;
   children: React.ReactNode;
+  animationKey?: string;
 }) {
   if (props.value !== props.index) return null;
-  return <Box sx={{ pt: 1.5 }}>{props.children}</Box>;
+  return (
+    <Box key={props.animationKey} className="panel-fade" sx={{ pt: 1.5 }}>
+      {props.children}
+    </Box>
+  );
 }
 
 export function NodeInspector({
@@ -72,7 +78,8 @@ export function NodeInspector({
   maxWidth = 1400,
 
   selectedNode,
-  draftActions,
+  focusFieldPath,
+  toolDraft,
 
   onClose,
   onUpdate,
@@ -85,6 +92,32 @@ export function NodeInspector({
   useEffect(() => {
     setTab(0);
   }, [selectedNode?.id]);
+
+  useEffect(() => {
+    if (focusFieldPath) {
+      setTab(0);
+    }
+  }, [focusFieldPath]);
+
+  useEffect(() => {
+    if (!focusFieldPath || !open || !selectedNode) return;
+    const selector = `[data-field-path="${focusFieldPath}"]`;
+    const target = document.querySelector(selector) as HTMLElement | null;
+    if (!target) return;
+    target.classList.add("field-focus");
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+    if ("focus" in target) {
+      try {
+        (target as HTMLInputElement).focus();
+      } catch {
+        // ignore focus errors
+      }
+    }
+    const timeout = window.setTimeout(() => {
+      target.classList.remove("field-focus");
+    }, 1200);
+    return () => window.clearTimeout(timeout);
+  }, [focusFieldPath, open, selectedNode?.id, tab]);
 
   // ---------- Resize logic ----------
   const startXRef = useRef(0);
@@ -125,8 +158,55 @@ export function NodeInspector({
     return () => stopDrag();
   }, [stopDrag]);
 
-  // hooks already called — safe to return
-  if (!open) return null;
+  const panelWidth = open ? width : 0;
+
+  if (toolDraft && open) {
+    return (
+      <Box
+        sx={{
+          position: "relative",
+          height: "100%",
+          width: panelWidth,
+          display: "flex",
+          flexDirection: "column",
+          bgcolor: "background.paper",
+          borderLeft: open ? 1 : 0,
+          borderColor: "divider",
+          boxShadow: "-12px 0 24px rgba(0,0,0,0.08)",
+          overflow: "hidden",
+          transition:
+            "width var(--motion-duration-slow) var(--motion-ease-standard), " +
+            "transform var(--motion-duration-slow) var(--motion-ease-standard), " +
+            "opacity var(--motion-duration-base) var(--motion-ease-standard)",
+          transform: open ? "translateX(0)" : "translateX(12px)",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+        }}
+      >
+        <Box
+          sx={{
+            px: 2.5,
+            py: 1.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="subtitle1">Инструменты</Typography>
+          <Box sx={{ flex: 1 }} />
+          <IconButton size="medium" onClick={toolDraft.onCancel}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ flex: 1, minHeight: 0, overflow: "auto", px: 2.5, py: 2 }}>
+          <ToolPickerForm onSelect={toolDraft.onSelect} />
+        </Box>
+      </Box>
+    );
+  }
 
   // One clean border (no duplicate). Resizer is overlay (no layout gap).
   return (
@@ -134,34 +214,42 @@ export function NodeInspector({
       sx={{
         position: "relative",
         height: "100%",
-        width,
+        width: panelWidth,
         display: "flex",
         flexDirection: "column",
         bgcolor: "background.paper",
-        borderLeft: 1,
+        borderLeft: open ? 1 : 0,
         borderColor: "divider",
         boxShadow: "-12px 0 24px rgba(0,0,0,0.08)",
         overflow: "hidden",
+        transition:
+          "width var(--motion-duration-slow) var(--motion-ease-standard), " +
+          "transform var(--motion-duration-slow) var(--motion-ease-standard), " +
+          "opacity var(--motion-duration-base) var(--motion-ease-standard)",
+        transform: open ? "translateX(0)" : "translateX(12px)",
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? "auto" : "none",
       }}
     >
-      {/* Resizer overlay: NO second line, just hit-area */}
-      <Box
-        onMouseDown={startDrag}
-        sx={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 10,
-          cursor: "col-resize",
-          zIndex: 20,
-          "&:hover": { bgcolor: "action.hover" },
-        }}
-        title="Потяните для изменения размера"
-      />
+      {open ? (
+        <Box
+          onMouseDown={startDrag}
+          sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 10,
+            cursor: "col-resize",
+            zIndex: 20,
+            "&:hover": { bgcolor: "action.hover" },
+          }}
+          title="Потяните для изменения размера"
+        />
+      ) : null}
 
       {/* If nothing selected */}
-      {!selectedNode ? (
+      {!open ? null : !selectedNode ? (
         <Box
           sx={{
             height: "100%",
@@ -200,6 +288,10 @@ export function NodeInspector({
               config: { ...data.config, ...patch },
             } as DefinitionNode);
           };
+
+          const animationKey = selectedNode
+            ? `${selectedNode.id}-${tab}`
+            : `empty-${tab}`;
 
           return (
             <>
@@ -263,7 +355,7 @@ export function NodeInspector({
               <Box
                 sx={{ flex: 1, minHeight: 0, overflow: "auto", px: 2.5, py: 2 }}
               >
-                <TabPanel value={tab} index={0}>
+                <TabPanel value={tab} index={0} animationKey={animationKey}>
                   <Stack spacing={1.25}>
                     {/* General */}
                     <TextField
@@ -272,6 +364,7 @@ export function NodeInspector({
                       value={data.name}
                       onChange={(e) => update({ name: e.target.value })}
                       fullWidth
+                      inputProps={{ "data-field-path": "name" }}
                     />
 
                     <FormControlLabel
@@ -301,6 +394,7 @@ export function NodeInspector({
                       fullWidth
                       multiline
                       minRows={3}
+                      inputProps={{ "data-field-path": "meta.description" }}
                     />
 
                     {/* Settings section inside General */}
@@ -314,27 +408,11 @@ export function NodeInspector({
                         data={data}
                         updateConfig={updateConfig}
                       />
-                      {draftActions ? (
-                        <Stack direction="row" spacing={1} sx={{ pt: 2 }}>
-                          <Button
-                            variant="contained"
-                            onClick={draftActions.onConfirm}
-                          >
-                            {draftActions.confirmLabel}
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            onClick={draftActions.onCancel}
-                          >
-                            Отмена
-                          </Button>
-                        </Stack>
-                      ) : null}
                     </Box>
                   </Stack>
                 </TabPanel>
 
-                <TabPanel value={tab} index={1}>
+                <TabPanel value={tab} index={1} animationKey={animationKey}>
                   <TextField
                     label="Данные ноды (только чтение)"
                     size="medium"

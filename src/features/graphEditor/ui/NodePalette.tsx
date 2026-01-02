@@ -87,7 +87,12 @@ export function NodePalette() {
                         key={kind}
                         draggable
                         onDragStart={(e) => onDragStart(e, kind)}
-                        sx={{ borderRadius: 1, mb: 0.5 }}
+                        sx={{
+                          borderRadius: 1,
+                          mb: 0.5,
+                          "&:hover": { transform: "translateX(4px)" },
+                          "&:active": { transform: "translateX(2px)" },
+                        }}
                       >
                         <ListItemIcon sx={{ minWidth: 36 }}>
                           <Icon fontSize="small" />

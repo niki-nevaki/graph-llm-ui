@@ -36,6 +36,7 @@ export function LlmNodeSettingsForm(props: {
         fullWidth
         value={data.config.apiKey}
         onChange={(e) => onChange({ apiKey: e.target.value })}
+        inputProps={{ "data-field-path": "config.apiKey" }}
       />
 
       <TextField
@@ -44,6 +45,7 @@ export function LlmNodeSettingsForm(props: {
         fullWidth
         value={data.config.model}
         onChange={(e) => onChange({ model: e.target.value })}
+        inputProps={{ "data-field-path": "config.model" }}
       />
 
       <TextField

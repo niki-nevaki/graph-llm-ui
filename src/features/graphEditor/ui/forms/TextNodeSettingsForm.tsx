@@ -37,6 +37,7 @@ export function TextNodeSettingsForm(props: {
           minRows={10}
           value={data.config.text}
           onChange={(e) => onChange({ text: e.target.value })}
+          inputProps={{ "data-field-path": "config.text" }}
         />
       ) : (
         <TextField
@@ -46,6 +47,7 @@ export function TextNodeSettingsForm(props: {
           value={data.config.fileName}
           onChange={(e) => onChange({ fileName: e.target.value })}
           placeholder="пример.txt"
+          inputProps={{ "data-field-path": "config.fileName" }}
         />
       )}
     </Stack>

@@ -88,7 +88,7 @@ export function fromDto(payload: {
     target: edge.target.nodeId,
     sourceHandle: edge.source.portId,
     targetHandle: edge.target.portId,
-    type: "smoothstep",
+    type: "custom",
   }));
 
   return {

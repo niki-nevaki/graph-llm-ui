@@ -45,6 +45,10 @@ export function AgentNodeSettingsForm(props: {
             label="Модель"
             size="medium"
             placeholder="Выберите модель"
+            inputProps={{
+              ...params.inputProps,
+              "data-field-path": "config.model",
+            }}
           />
         )}
       />
@@ -67,6 +71,7 @@ export function AgentNodeSettingsForm(props: {
         minRows={4}
         value={data.config.system_prompt}
         onChange={(e) => onChange({ system_prompt: e.target.value })}
+        inputProps={{ "data-field-path": "config.system_prompt" }}
       />
 
       <FormControlLabel

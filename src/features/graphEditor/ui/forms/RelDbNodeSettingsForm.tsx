@@ -38,6 +38,7 @@ export function RelDbNodeSettingsForm(props: {
           value={data.config.host}
           onChange={(e) => onChange({ host: e.target.value })}
           disabled={data.config.driver === "sqlite"}
+          inputProps={{ "data-field-path": "config.host" }}
         />
         <TextField
           label="Порт"
@@ -57,6 +58,7 @@ export function RelDbNodeSettingsForm(props: {
         value={data.config.database}
         onChange={(e) => onChange({ database: e.target.value })}
         disabled={data.config.driver === "sqlite"}
+        inputProps={{ "data-field-path": "config.database" }}
       />
 
       <Stack direction="row" spacing={1}>
@@ -94,17 +96,7 @@ export function RelDbNodeSettingsForm(props: {
         </Select>
       </FormControl>
 
-      {data.config.operation === "query" ? (
-        <TextField
-          label="SQL"
-          size="medium"
-          fullWidth
-          multiline
-          minRows={10}
-          value={data.config.sql}
-          onChange={(e) => onChange({ sql: e.target.value })}
-        />
-      ) : (
+      {data.config.operation !== "query" ? (
         <TextField
           label="Таблица"
           size="medium"
@@ -112,8 +104,9 @@ export function RelDbNodeSettingsForm(props: {
           value={data.config.table}
           onChange={(e) => onChange({ table: e.target.value })}
           placeholder="public.my_table"
+          inputProps={{ "data-field-path": "config.table" }}
         />
-      )}
+      ) : null}
     </Stack>
   );
 }
