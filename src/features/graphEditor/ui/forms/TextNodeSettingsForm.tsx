@@ -17,20 +17,20 @@ export function TextNodeSettingsForm(props: {
   return (
     <Stack spacing={1.25}>
       <FormControl size="medium" fullWidth>
-        <InputLabel>Mode</InputLabel>
+        <InputLabel>Режим</InputLabel>
         <Select
-          label="Mode"
+          label="Режим"
           value={data.config.mode}
           onChange={(e) => onChange({ mode: e.target.value as any })}
         >
-          <MenuItem value="inline">Inline</MenuItem>
-          <MenuItem value="file">File</MenuItem>
+          <MenuItem value="inline">Встроенный</MenuItem>
+          <MenuItem value="file">Файл</MenuItem>
         </Select>
       </FormControl>
 
       {data.config.mode === "inline" ? (
         <TextField
-          label="Text"
+          label="Текст"
           size="medium"
           fullWidth
           multiline
@@ -40,12 +40,12 @@ export function TextNodeSettingsForm(props: {
         />
       ) : (
         <TextField
-          label="File name"
+          label="Имя файла"
           size="medium"
           fullWidth
           value={data.config.fileName}
           onChange={(e) => onChange({ fileName: e.target.value })}
-          placeholder="example.txt"
+          placeholder="пример.txt"
         />
       )}
     </Stack>

@@ -1,1 +1,1 @@
-export const HomePage = () => <>HomePage</>;
+export const HomePage = () => <>Главная</>;

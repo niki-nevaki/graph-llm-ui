@@ -21,15 +21,15 @@ export function AgentNodeSettingsForm(props: {
   return (
     <Stack spacing={1.25}>
       <FormControl size="medium" fullWidth>
-        <InputLabel>Mode</InputLabel>
+        <InputLabel>Режим</InputLabel>
         <Select
-          label="Mode"
+          label="Режим"
           value={data.config.mode}
           onChange={(e) => onChange({ mode: e.target.value as any })}
         >
-          <MenuItem value="chat">Chat</MenuItem>
-          <MenuItem value="task">Task</MenuItem>
-          <MenuItem value="planner">Planner</MenuItem>
+          <MenuItem value="chat">Чат</MenuItem>
+          <MenuItem value="task">Задача</MenuItem>
+          <MenuItem value="planner">Планировщик</MenuItem>
         </Select>
       </FormControl>
 
@@ -42,15 +42,15 @@ export function AgentNodeSettingsForm(props: {
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Model"
+            label="Модель"
             size="medium"
-            placeholder="Select a model"
+            placeholder="Выберите модель"
           />
         )}
       />
 
       <TextField
-        label="Temperature"
+        label="Температура"
         size="medium"
         type="number"
         value={data.config.temperature}
@@ -60,28 +60,13 @@ export function AgentNodeSettingsForm(props: {
       />
 
       <TextField
-        label="System prompt"
+        label="Системный промпт"
         size="medium"
         fullWidth
         multiline
         minRows={4}
         value={data.config.system_prompt}
         onChange={(e) => onChange({ system_prompt: e.target.value })}
-      />
-
-      <TextField
-        label="Tools (comma-separated)"
-        size="medium"
-        fullWidth
-        value={(data.config.tools ?? []).join(", ")}
-        onChange={(e) =>
-          onChange({
-            tools: e.target.value
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean),
-          })
-        }
       />
 
       <FormControlLabel
@@ -91,7 +76,7 @@ export function AgentNodeSettingsForm(props: {
             onChange={(e) => onChange({ use_memory: e.target.checked })}
           />
         }
-        label="Use memory"
+        label="Использовать память"
       />
     </Stack>
   );

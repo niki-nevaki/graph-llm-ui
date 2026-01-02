@@ -17,9 +17,9 @@ export function RelDbNodeSettingsForm(props: {
   return (
     <Stack spacing={1.25}>
       <FormControl size="medium" fullWidth>
-        <InputLabel>Driver</InputLabel>
+        <InputLabel>Драйвер</InputLabel>
         <Select
-          label="Driver"
+          label="Драйвер"
           value={data.config.driver}
           onChange={(e) => onChange({ driver: e.target.value as any })}
         >
@@ -32,7 +32,7 @@ export function RelDbNodeSettingsForm(props: {
 
       <Stack direction="row" spacing={1}>
         <TextField
-          label="Host"
+          label="Хост"
           size="medium"
           fullWidth
           value={data.config.host}
@@ -40,7 +40,7 @@ export function RelDbNodeSettingsForm(props: {
           disabled={data.config.driver === "sqlite"}
         />
         <TextField
-          label="Port"
+          label="Порт"
           size="medium"
           type="number"
           value={data.config.port}
@@ -51,7 +51,7 @@ export function RelDbNodeSettingsForm(props: {
       </Stack>
 
       <TextField
-        label="Database"
+        label="База данных"
         size="medium"
         fullWidth
         value={data.config.database}
@@ -61,7 +61,7 @@ export function RelDbNodeSettingsForm(props: {
 
       <Stack direction="row" spacing={1}>
         <TextField
-          label="User"
+          label="Пользователь"
           size="medium"
           fullWidth
           value={data.config.user}
@@ -69,7 +69,7 @@ export function RelDbNodeSettingsForm(props: {
           disabled={data.config.driver === "sqlite"}
         />
         <TextField
-          label="Password"
+          label="Пароль"
           size="medium"
           type="password"
           fullWidth
@@ -80,17 +80,17 @@ export function RelDbNodeSettingsForm(props: {
       </Stack>
 
       <FormControl size="medium" fullWidth>
-        <InputLabel>Operation</InputLabel>
+        <InputLabel>Операция</InputLabel>
         <Select
-          label="Operation"
+          label="Операция"
           value={data.config.operation}
           onChange={(e) => onChange({ operation: e.target.value as any })}
         >
-          <MenuItem value="query">Query</MenuItem>
-          <MenuItem value="select">Select</MenuItem>
-          <MenuItem value="insert">Insert</MenuItem>
-          <MenuItem value="update">Update</MenuItem>
-          <MenuItem value="delete">Delete</MenuItem>
+          <MenuItem value="query">Запрос</MenuItem>
+          <MenuItem value="select">Выборка</MenuItem>
+          <MenuItem value="insert">Вставка</MenuItem>
+          <MenuItem value="update">Обновление</MenuItem>
+          <MenuItem value="delete">Удаление</MenuItem>
         </Select>
       </FormControl>
 
@@ -106,7 +106,7 @@ export function RelDbNodeSettingsForm(props: {
         />
       ) : (
         <TextField
-          label="Table"
+          label="Таблица"
           size="medium"
           fullWidth
           value={data.config.table}

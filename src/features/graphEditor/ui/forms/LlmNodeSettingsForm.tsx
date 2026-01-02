@@ -17,9 +17,9 @@ export function LlmNodeSettingsForm(props: {
   return (
     <Stack spacing={1.25}>
       <FormControl size="medium" fullWidth>
-        <InputLabel>Provider</InputLabel>
+        <InputLabel>Провайдер</InputLabel>
         <Select
-          label="Provider"
+          label="Провайдер"
           value={data.config.provider}
           onChange={(e) => onChange({ provider: e.target.value as any })}
         >
@@ -30,7 +30,7 @@ export function LlmNodeSettingsForm(props: {
       </FormControl>
 
       <TextField
-        label="API key"
+        label="API-ключ"
         size="medium"
         type="password"
         fullWidth
@@ -39,7 +39,7 @@ export function LlmNodeSettingsForm(props: {
       />
 
       <TextField
-        label="Model"
+        label="Модель"
         size="medium"
         fullWidth
         value={data.config.model}
@@ -47,7 +47,7 @@ export function LlmNodeSettingsForm(props: {
       />
 
       <TextField
-        label="System prompt"
+        label="Системный промпт"
         size="medium"
         fullWidth
         multiline
@@ -58,7 +58,7 @@ export function LlmNodeSettingsForm(props: {
 
       <Stack direction="row" spacing={1}>
         <TextField
-          label="Temperature"
+          label="Температура"
           size="medium"
           type="number"
           value={data.config.temperature}
@@ -67,7 +67,7 @@ export function LlmNodeSettingsForm(props: {
           inputProps={{ step: 0.1, min: 0, max: 2 }}
         />
         <TextField
-          label="Max tokens"
+          label="Макс. токены"
           size="medium"
           type="number"
           value={data.config.maxTokens}

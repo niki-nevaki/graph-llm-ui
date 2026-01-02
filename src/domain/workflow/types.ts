@@ -1,4 +1,4 @@
-export type NodeKind = "text" | "tgBot" | "relDb" | "llm" | "agent";
+export type NodeKind = "text" | "tgBot" | "relDb" | "llm" | "agent" | "tool";
 
 export type NodeMeta = {
   description?: string;
@@ -44,8 +44,14 @@ export type AgentNodeConfig = {
   model: string;
   temperature: number;
   system_prompt: string;
-  tools: string[];
   use_memory: boolean;
+};
+
+export type ToolNodeConfig = {
+  fields: Array<{
+    key: string;
+    value: string;
+  }>;
 };
 
 export type NodeConfig =
@@ -53,7 +59,8 @@ export type NodeConfig =
   | TgBotNodeConfig
   | RelDbNodeConfig
   | LlmNodeConfig
-  | AgentNodeConfig;
+  | AgentNodeConfig
+  | ToolNodeConfig;
 
 export type DefinitionNodeBase = {
   id: string;
@@ -87,12 +94,18 @@ export type AgentDefinitionNode = DefinitionNodeBase & {
   config: AgentNodeConfig;
 };
 
+export type ToolDefinitionNode = DefinitionNodeBase & {
+  kind: "tool";
+  config: ToolNodeConfig;
+};
+
 export type DefinitionNode =
   | TextDefinitionNode
   | TgBotDefinitionNode
   | RelDbDefinitionNode
   | LlmDefinitionNode
-  | AgentDefinitionNode;
+  | AgentDefinitionNode
+  | ToolDefinitionNode;
 
 export type DefinitionEdge = {
   id: string;
@@ -143,6 +156,7 @@ export function isNodeKind(value: string): value is NodeKind {
     value === "tgBot" ||
     value === "relDb" ||
     value === "llm" ||
-    value === "agent"
+    value === "agent" ||
+    value === "tool"
   );
 }

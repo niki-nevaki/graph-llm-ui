@@ -4,7 +4,7 @@ import { HomePage } from "../pages/HomePage";
 import { AppShell } from "./layout/AppShell";
 
 export default function App() {
-  const userName = "Username"; // позже заменишь на реального юзера из стора/авторизации
+  const userName = "Пользователь"; // позже заменишь на реального юзера из стора/авторизации
 
   return (
     <AppShell userName={userName}>

@@ -47,6 +47,8 @@ export function validateNode(node: DefinitionNode): {
       break;
     case "agent":
       break;
+    case "tool":
+      break;
   }
 
   return { ok: issues.length === 0, issues };

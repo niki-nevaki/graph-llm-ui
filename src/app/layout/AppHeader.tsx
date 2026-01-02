@@ -6,7 +6,9 @@ export function AppHeader({ userName }: { userName: string }) {
 
   const emoji = mode === "dark" ? "☀️" : "🌙";
   const nextLabel =
-    mode === "dark" ? "Switch to light theme" : "Switch to dark theme";
+    mode === "dark"
+      ? "Переключить на светлую тему"
+      : "Переключить на тёмную тему";
 
   return (
     <AppBar

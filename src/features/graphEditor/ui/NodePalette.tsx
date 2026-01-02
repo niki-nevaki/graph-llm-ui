@@ -20,6 +20,8 @@ import type { NodeKind } from "../../../domain/workflow";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 
 const ALL_KINDS = Object.keys(NODE_SPECS) as NodeKind[];
+const PALETTE_KINDS = ALL_KINDS.filter((kind) => kind !== "tool");
+const PALETTE_GROUPS = ["Входы", "Интеграции", "Данные", "ИИ"] as const;
 
 function onDragStart(event: React.DragEvent, kind: NodeKind) {
   event.dataTransfer.setData("application/reactflow-node-type", "appNode");
@@ -42,13 +44,13 @@ export function NodePalette() {
     >
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" sx={{ mb: 1 }}>
-          Nodes
+          Ноды
         </Typography>
 
         <TextField
           size="medium"
           fullWidth
-          placeholder="Search nodes…"
+          placeholder="Поиск нод…"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -62,7 +64,7 @@ export function NodePalette() {
       <Divider />
 
       <Box sx={{ flex: 1, overflow: "auto" }}>
-        {(["Inputs", "Integrations", "Data", "AI"] as const).map((group) => (
+        {PALETTE_GROUPS.map((group) => (
           <Accordion
             key={group}
             defaultExpanded
@@ -75,7 +77,7 @@ export function NodePalette() {
             </AccordionSummary>
             <AccordionDetails sx={{ pt: 0 }}>
               <List dense disablePadding>
-                {ALL_KINDS.filter((k) => NODE_SPECS[k].group === group).map(
+                {PALETTE_KINDS.filter((k) => NODE_SPECS[k].group === group).map(
                   (kind) => {
                     const spec = NODE_SPECS[kind];
                     const Icon = spec.Icon;
@@ -107,7 +109,7 @@ export function NodePalette() {
       <Divider />
       <Box sx={{ p: 1.5 }}>
         <Typography variant="caption" color="text.secondary">
-          Drag a node onto the canvas →
+          Перетащите ноду на холст →
         </Typography>
       </Box>
     </Paper>

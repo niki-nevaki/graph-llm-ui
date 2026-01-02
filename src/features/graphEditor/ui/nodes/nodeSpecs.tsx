@@ -1,60 +1,80 @@
+import BuildIcon from "@mui/icons-material/Build";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import StorageIcon from "@mui/icons-material/Storage";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import type { ComponentType } from "react";
+import { Position } from "@xyflow/react";
 
 import type { NodeKind } from "../../../../domain/workflow";
 
 export type NodeSpec = {
   kind: NodeKind;
   title: string;
-  group: "Inputs" | "Integrations" | "Data" | "AI";
+  group: "Входы" | "Интеграции" | "Данные" | "ИИ" | "Инструменты";
   Icon: ComponentType<{ fontSize?: "small" | "medium" | "large" }>;
   inLabel: string;
   outLabel: string;
+  toolHandle?: {
+    label: string;
+    position: Position;
+    offsetPercent: number;
+  };
 };
 
 export const NODE_SPECS: Record<NodeKind, NodeSpec> = {
   text: {
     kind: "text",
-    title: "Text",
-    group: "Inputs",
+    title: "Текст",
+    group: "Входы",
     Icon: TextFieldsIcon,
-    inLabel: "in",
-    outLabel: "text",
+    inLabel: "вход",
+    outLabel: "текст",
   },
   tgBot: {
     kind: "tgBot",
-    title: "Telegram Bot",
-    group: "Integrations",
+    title: "Телеграм-бот",
+    group: "Интеграции",
     Icon: TelegramIcon,
-    inLabel: "msg",
-    outLabel: "status",
+    inLabel: "сообщение",
+    outLabel: "статус",
   },
   relDb: {
     kind: "relDb",
-    title: "Relational DB",
-    group: "Data",
+    title: "Реляционная БД",
+    group: "Данные",
     Icon: StorageIcon,
-    inLabel: "query",
-    outLabel: "rows",
+    inLabel: "запрос",
+    outLabel: "строки",
   },
   llm: {
     kind: "llm",
-    title: "LLM",
-    group: "AI",
+    title: "Языковая модель",
+    group: "ИИ",
     Icon: PsychologyIcon,
-    inLabel: "prompt",
-    outLabel: "text",
+    inLabel: "промпт",
+    outLabel: "текст",
   },
   agent: {
     kind: "agent",
-    title: "Agent",
-    group: "AI",
+    title: "Агент",
+    group: "ИИ",
     Icon: SupportAgentIcon,
-    inLabel: "input",
-    outLabel: "output",
+    inLabel: "вход",
+    outLabel: "выход",
+    toolHandle: {
+      label: "инстр.",
+      position: Position.Bottom,
+      offsetPercent: 50,
+    },
+  },
+  tool: {
+    kind: "tool",
+    title: "Инструмент",
+    group: "Инструменты",
+    Icon: BuildIcon,
+    inLabel: "вход",
+    outLabel: "инстр.",
   },
 };

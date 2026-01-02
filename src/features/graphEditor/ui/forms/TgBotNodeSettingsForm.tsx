@@ -17,20 +17,20 @@ export function TgBotNodeSettingsForm(props: {
   return (
     <Stack spacing={1.25}>
       <FormControl size="medium" fullWidth>
-        <InputLabel>Direction</InputLabel>
+        <InputLabel>Направление</InputLabel>
         <Select
-          label="Direction"
+          label="Направление"
           value={data.config.direction}
           onChange={(e) => onChange({ direction: e.target.value as any })}
         >
-          <MenuItem value="in">In</MenuItem>
-          <MenuItem value="out">Out</MenuItem>
-          <MenuItem value="inout">In/Out</MenuItem>
+          <MenuItem value="in">Вход</MenuItem>
+          <MenuItem value="out">Выход</MenuItem>
+          <MenuItem value="inout">Вход/Выход</MenuItem>
         </Select>
       </FormControl>
 
       <TextField
-        label="Bot token"
+        label="Токен бота"
         size="medium"
         fullWidth
         type="password"
@@ -39,7 +39,7 @@ export function TgBotNodeSettingsForm(props: {
       />
 
       <TextField
-        label="Chat ID"
+        label="ID чата"
         size="medium"
         fullWidth
         value={data.config.chatId}
@@ -47,13 +47,13 @@ export function TgBotNodeSettingsForm(props: {
       />
 
       <FormControl size="medium" fullWidth>
-        <InputLabel>Parse mode</InputLabel>
+        <InputLabel>Режим разбора</InputLabel>
         <Select
-          label="Parse mode"
+          label="Режим разбора"
           value={data.config.parseMode}
           onChange={(e) => onChange({ parseMode: e.target.value as any })}
         >
-          <MenuItem value="plain">Plain</MenuItem>
+          <MenuItem value="plain">Обычный</MenuItem>
           <MenuItem value="markdown">Markdown</MenuItem>
           <MenuItem value="html">HTML</MenuItem>
         </Select>

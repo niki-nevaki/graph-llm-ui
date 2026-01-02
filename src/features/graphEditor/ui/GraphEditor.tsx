@@ -2,23 +2,27 @@ import { Box } from "@mui/material";
 import {
   ReactFlowProvider,
   addEdge,
+  MarkerType,
   useEdgesState,
   useNodesState,
+  type NodeTypes,
   type Connection,
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 
 import {
   createDefaultNodeConfig,
   type DefinitionNode,
   type NodeKind,
+  type ToolDefinitionNode,
 } from "../../../domain/workflow";
 import { DEFAULT_EDITOR_STATE } from "../model/editorState";
 import { FlowCanvas } from "./FlowCanvas";
 import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
+import { AppNode } from "./nodes/AppNode";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 
 const initialEdges: Edge[] = [];
@@ -45,6 +49,8 @@ const createDefinitionNode = (id: string, kind: NodeKind): DefinitionNode => {
       return { ...base, kind, config: createDefaultNodeConfig("llm") };
     case "agent":
       return { ...base, kind, config: createDefaultNodeConfig("agent") };
+    case "tool":
+      return { ...base, kind, config: createDefaultNodeConfig("tool") };
     default:
       throw new Error(`Unsupported node kind: ${kind}`);
   }
@@ -65,14 +71,32 @@ const initialNodes: Array<Node<DefinitionNode>> = [
   },
 ];
 
+type ToolDraft = {
+  agentId: string;
+  data: ToolDefinitionNode;
+  position: { x: number; y: number };
+};
+
 export function GraphEditor() {
   const [nodes, setNodes, onNodesChange] =
     useNodesState<Node<DefinitionNode>>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
+
   const [selectedNodeId, setSelectedNodeId] = useState(
     DEFAULT_EDITOR_STATE.selectedNodeId
   );
+  const [toolDraft, setToolDraft] = useState<ToolDraft | null>(null);
   const [inspectorWidth, setInspectorWidth] = useState(
     DEFAULT_EDITOR_STATE.inspectorWidth
   );
@@ -111,6 +135,94 @@ export function GraphEditor() {
     [setNodes]
   );
 
+  const requestToolDraft = useCallback((agentId: string) => {
+    const currentNodes = nodesRef.current;
+    const currentEdges = edgesRef.current;
+    const agentNode = currentNodes.find((node) => node.id === agentId);
+    if (!agentNode) return;
+
+    const toolIndex = currentEdges.filter(
+      (edge) => edge.target === agentId && edge.targetHandle === "tool"
+    ).length;
+
+    const draftId = `draft-tool-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
+
+    const draft: ToolDraft = {
+      agentId,
+      position: {
+        x: agentNode.position.x,
+        y: agentNode.position.y + 220 + toolIndex * 140,
+      },
+      data: {
+        id: draftId,
+        kind: "tool",
+        name: NODE_SPECS.tool.title,
+        enabled: true,
+        meta: { description: "" },
+        config: createDefaultNodeConfig("tool"),
+      },
+    };
+
+    setToolDraft(draft);
+    setSelectedNodeId(null);
+    setInspectorOpen(true);
+  }, []);
+
+  const updateToolDraft = useCallback((nextData: DefinitionNode) => {
+    setToolDraft((draft) =>
+      draft
+        ? {
+            ...draft,
+            data: { ...nextData, id: draft.data.id } as ToolDefinitionNode,
+          }
+        : draft
+    );
+  }, []);
+
+  const confirmToolDraft = useCallback(() => {
+    setToolDraft((draft) => {
+      if (!draft) return draft;
+
+      const nodeId = nextId();
+      const edgeId = `edge-${nodeId}-${draft.agentId}`;
+
+      const toolNode: Node<DefinitionNode> = {
+        id: nodeId,
+        type: "appNode",
+        position: draft.position,
+        data: { ...draft.data, id: nodeId },
+      };
+
+      setNodes((nds) => nds.concat(toolNode));
+      setEdges((eds) =>
+        addEdge(
+          {
+            id: edgeId,
+            source: nodeId,
+            sourceHandle: "out",
+            target: draft.agentId,
+            targetHandle: "tool",
+            type: "smoothstep",
+            markerEnd: { type: MarkerType.ArrowClosed },
+          },
+          eds
+        )
+      );
+
+      setSelectedNodeId(nodeId);
+      setInspectorOpen(true);
+
+      return null;
+    });
+  }, [setEdges, setNodes]);
+
+  const cancelToolDraft = useCallback(() => {
+    setToolDraft(null);
+    setInspectorOpen(false);
+  }, []);
+
   const selectedNode = useMemo(() => {
     if (!selectedNodeId) return null;
     const n = nodes.find((x) => x.id === selectedNodeId);
@@ -130,6 +242,29 @@ export function GraphEditor() {
     [setNodes]
   );
 
+  const inspectorNode = toolDraft
+    ? { id: toolDraft.data.id, data: toolDraft.data }
+    : selectedNode;
+
+  const inspectorUpdate = toolDraft ? updateToolDraft : updateNodeData;
+
+  const inspectorDraftActions = toolDraft
+    ? {
+        confirmLabel: "Добавить инструмент",
+        onConfirm: confirmToolDraft,
+        onCancel: cancelToolDraft,
+      }
+    : undefined;
+
+  const nodeTypes = useMemo<NodeTypes>(
+    () => ({
+      appNode: (props) => (
+        <AppNode {...props} onRequestToolDraft={requestToolDraft} />
+      ),
+    }),
+    [requestToolDraft]
+  );
+
   return (
     <ReactFlowProvider>
       <Box
@@ -146,22 +281,34 @@ export function GraphEditor() {
         <FlowCanvas
           nodes={nodes}
           edges={edges}
+          nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onCreateNode={onCreateNode}
           onNodeClick={(_, node) => {
+            if (toolDraft) return;
             setSelectedNodeId(node.id);
             setInspectorOpen(true);
           }}
-          onPaneClick={() => setSelectedNodeId(null)}
+          onPaneClick={() => {
+            if (toolDraft) return;
+            setSelectedNodeId(null);
+          }}
         />
         <NodeInspector
           open={inspectorOpen}
           width={inspectorWidth}
-          selectedNode={selectedNode}
-          onClose={() => setInspectorOpen(false)}
-          onUpdate={updateNodeData}
+          selectedNode={inspectorNode}
+          draftActions={inspectorDraftActions}
+          onClose={() => {
+            if (toolDraft) {
+              cancelToolDraft();
+              return;
+            }
+            setInspectorOpen(false);
+          }}
+          onUpdate={inspectorUpdate}
           onWidthChange={setInspectorWidth}
         />
       </Box>

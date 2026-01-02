@@ -1,6 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
+  Button,
   Divider,
   FormControlLabel,
   IconButton,
@@ -23,6 +24,7 @@ import type {
   RelDbDefinitionNode,
   TextDefinitionNode,
   TgBotDefinitionNode,
+  ToolDefinitionNode,
 } from "../../../domain/workflow";
 
 import { AgentNodeSettingsForm } from "./forms/AgentNodeSettingsForm";
@@ -30,6 +32,7 @@ import { LlmNodeSettingsForm } from "./forms/LlmNodeSettingsForm";
 import { RelDbNodeSettingsForm } from "./forms/RelDbNodeSettingsForm";
 import { TextNodeSettingsForm } from "./forms/TextNodeSettingsForm";
 import { TgBotNodeSettingsForm } from "./forms/TgBotNodeSettingsForm";
+import { ToolNodeSettingsForm } from "./forms/ToolNodeSettingsForm";
 
 type Props = {
   open: boolean;
@@ -38,6 +41,11 @@ type Props = {
   maxWidth?: number;
 
   selectedNode: { id: string; data: DefinitionNode } | null;
+  draftActions?: {
+    confirmLabel: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+  };
 
   onClose: () => void;
   onUpdate: (nodeId: string, nextData: DefinitionNode) => void;
@@ -64,6 +72,7 @@ export function NodeInspector({
   maxWidth = 1400,
 
   selectedNode,
+  draftActions,
 
   onClose,
   onUpdate,
@@ -148,7 +157,7 @@ export function NodeInspector({
           zIndex: 20,
           "&:hover": { bgcolor: "action.hover" },
         }}
-        title="Drag to resize"
+        title="Потяните для изменения размера"
       />
 
       {/* If nothing selected */}
@@ -162,13 +171,22 @@ export function NodeInspector({
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Select a node to edit
+            Выберите ноду для редактирования
           </Typography>
         </Box>
       ) : (
         (() => {
           const { id, data } = selectedNode;
           const spec = NODE_SPECS[data.kind];
+          if (!spec) {
+            return (
+              <Box sx={{ p: 2.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Неподдерживаемый тип ноды
+                </Typography>
+              </Box>
+            );
+          }
           const Icon = spec.Icon;
           const v = validateNode(data);
 
@@ -217,14 +235,14 @@ export function NodeInspector({
                   </Typography>
                   <Typography variant="caption" color="text.secondary" noWrap>
                     {spec.title} •{" "}
-                    {v.ok ? "Configured" : `Issues: ${v.issues.length}`}
+                    {v.ok ? "Настроено" : `Проблем: ${v.issues.length}`}
                   </Typography>
                 </Box>
 
                 <IconButton
                   size="medium"
                   onClick={onClose}
-                  aria-label="Close inspector"
+                  aria-label="Закрыть инспектор"
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
@@ -237,7 +255,7 @@ export function NodeInspector({
                 variant="fullWidth"
                 sx={{ px: 1, borderBottom: 1, borderColor: "divider" }}
               >
-                <Tab label="General" />
+                <Tab label="Общее" />
                 <Tab label="JSON" />
               </Tabs>
 
@@ -249,7 +267,7 @@ export function NodeInspector({
                   <Stack spacing={1.25}>
                     {/* General */}
                     <TextField
-                      label="Name"
+                      label="Название"
                       size="medium"
                       value={data.name}
                       onChange={(e) => update({ name: e.target.value })}
@@ -265,11 +283,11 @@ export function NodeInspector({
                           }
                         />
                       }
-                      label="Enabled"
+                      label="Включена"
                     />
 
                     <TextField
-                      label="Description"
+                      label="Описание"
                       size="medium"
                       value={data.meta?.description ?? ""}
                       onChange={(e) =>
@@ -289,20 +307,36 @@ export function NodeInspector({
                     <Box sx={{ pt: 0.5 }}>
                       <Divider sx={{ my: 1.5 }} />
                       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                        Settings
+                        Настройки
                       </Typography>
 
                       <SettingsForm
                         data={data}
                         updateConfig={updateConfig}
                       />
+                      {draftActions ? (
+                        <Stack direction="row" spacing={1} sx={{ pt: 2 }}>
+                          <Button
+                            variant="contained"
+                            onClick={draftActions.onConfirm}
+                          >
+                            {draftActions.confirmLabel}
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={draftActions.onCancel}
+                          >
+                            Отмена
+                          </Button>
+                        </Stack>
+                      ) : null}
                     </Box>
                   </Stack>
                 </TabPanel>
 
                 <TabPanel value={tab} index={1}>
                   <TextField
-                    label="Node data (read-only)"
+                    label="Данные ноды (только чтение)"
                     size="medium"
                     fullWidth
                     multiline
@@ -365,6 +399,13 @@ function SettingsForm(props: {
       return (
         <AgentNodeSettingsForm
           data={data as AgentDefinitionNode}
+          onChange={updateConfig}
+        />
+      );
+    case "tool":
+      return (
+        <ToolNodeSettingsForm
+          data={data as ToolDefinitionNode}
           onChange={updateConfig}
         />
       );

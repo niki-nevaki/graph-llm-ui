@@ -1,6 +1,7 @@
-import { Box, Chip, Paper, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { validateNode, type DefinitionNode } from "../../../../domain/workflow";
 import { NODE_SPECS } from "./nodeSpecs";
 
@@ -13,12 +14,88 @@ const handleStyle: React.CSSProperties = {
   zIndex: 10,
 };
 
-export const AppNode = memo(function AppNode(props: NodeProps<DefinitionNode>) {
+const buildHandleStyle = (offsetPercent: number) => ({
+  ...handleStyle,
+  top: `${offsetPercent}%`,
+});
+
+const buildBottomHandleStyle = (offsetPercent: number) => ({
+  ...handleStyle,
+  left: `${offsetPercent}%`,
+  transform: "translateX(-50%)",
+});
+
+const TOOL_LABEL_OFFSET = 6;
+const TOOL_LINE_OFFSET = 18;
+const TOOL_LINE_LENGTH = 30;
+const TOOL_PLUS_OFFSET = TOOL_LINE_OFFSET + TOOL_LINE_LENGTH + 12;
+
+type AppNodeProps = NodeProps<DefinitionNode> & {
+  onRequestToolDraft?: (agentId: string) => void;
+};
+
+export const AppNode = memo(function AppNode(props: AppNodeProps) {
   const data = props.data;
   const spec = NODE_SPECS[data.kind];
   const Icon = spec.Icon;
+  const isToolNode = data.kind === "tool";
 
   const v = validateNode(data);
+  const statusColor = v.ok ? "success.main" : "warning.main";
+
+  const onAddTool = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      props.onRequestToolDraft?.(props.id);
+    },
+    [props.id, props.onRequestToolDraft]
+  );
+
+  if (isToolNode) {
+    return (
+      <Paper
+        elevation={3}
+        sx={{
+          position: "relative",
+          width: 120,
+          height: 120,
+          borderRadius: 999,
+          display: "grid",
+          placeItems: "center",
+          border: "1px solid",
+          borderColor: props.selected ? "primary.main" : "divider",
+          opacity: data.enabled ? 1 : 0.55,
+        }}
+      >
+        <Box
+          sx={{
+            width: 52,
+            height: 52,
+            borderRadius: "50%",
+            display: "grid",
+            placeItems: "center",
+            bgcolor: "action.hover",
+          }}
+        >
+          <Icon fontSize="medium" />
+        </Box>
+
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="in"
+          style={buildHandleStyle(50)}
+        />
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="out"
+          style={buildHandleStyle(50)}
+        />
+      </Paper>
+    );
+  }
 
   return (
     <Paper
@@ -54,83 +131,99 @@ export const AppNode = memo(function AppNode(props: NodeProps<DefinitionNode>) {
           <Typography variant="subtitle2" noWrap>
             {data.name}
           </Typography>
-          <Typography variant="caption" color="text.secondary" noWrap>
-            {spec.title}
-          </Typography>
         </Box>
 
-        <Chip
-          size="medium"
-          label={v.ok ? "ok" : `${v.issues.length}`}
-          color={v.ok ? "success" : "warning"}
-          variant="outlined"
+        <Box
+          sx={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            bgcolor: statusColor,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
         />
       </Box>
 
-      <Box
-        sx={{
-          px: 1.25,
-          py: 1,
-          bgcolor: "background.default",
-          borderTop: 1,
-          borderColor: "divider",
-        }}
-      >
-        <Typography variant="caption" color="text.secondary">
-          Drag • Connect • Click to edit
-        </Typography>
-      </Box>
+      {data.kind === "agent" && spec.toolHandle ? (
+        <>
+          <Typography
+            variant="caption"
+            sx={{
+              position: "absolute",
+              left: "50%",
+              top: "100%",
+              transform: `translate(-50%, ${TOOL_LABEL_OFFSET}px)`,
+              fontSize: 10,
+              letterSpacing: 0.2,
+              color: "text.secondary",
+              userSelect: "none",
+            }}
+          >
+            инструмент
+          </Typography>
+          <Box
+            sx={{
+              position: "absolute",
+              left: "50%",
+              top: "100%",
+              transform: `translate(-50%, ${TOOL_LINE_OFFSET}px)`,
+              width: 2,
+              height: TOOL_LINE_LENGTH,
+              bgcolor: "divider",
+            }}
+          />
+          <IconButton
+            aria-label="Добавить инструмент"
+            onClick={onAddTool}
+            onMouseDown={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+            className="nodrag nopan"
+            size="small"
+            sx={{
+              position: "absolute",
+              left: "50%",
+              top: "100%",
+              transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px)`,
+              width: 22,
+              height: 22,
+              border: "1px solid",
+              borderColor: "error.main",
+              bgcolor: "background.paper",
+              color: "error.main",
+              boxShadow: 1,
+              borderRadius: 0,
+              pointerEvents: "all",
+              zIndex: 5,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+          >
+            <AddIcon fontSize="inherit" />
+          </IconButton>
+        </>
+      ) : null}
 
       {/* Handles: 1 вход + 1 выход (пока без ограничений) */}
       <Handle
         type="target"
         position={Position.Left}
         id="in"
-        style={handleStyle}
+        style={buildHandleStyle(50)}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="out"
-        style={handleStyle}
+        style={buildHandleStyle(50)}
       />
-
-      {/* подписи портов */}
-      <Box
-        sx={{
-          position: "absolute",
-          left: -44,
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: 40,
-        }}
-      >
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ userSelect: "none" }}
-        >
-          {spec.inLabel}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          position: "absolute",
-          right: -44,
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: 40,
-          textAlign: "right",
-        }}
-      >
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ userSelect: "none" }}
-        >
-          {spec.outLabel}
-        </Typography>
-      </Box>
+      {spec.toolHandle ? (
+        <Handle
+          type="target"
+          position={spec.toolHandle.position}
+          id="tool"
+          style={buildBottomHandleStyle(spec.toolHandle.offsetPercent)}
+        />
+      ) : null}
     </Paper>
   );
 });

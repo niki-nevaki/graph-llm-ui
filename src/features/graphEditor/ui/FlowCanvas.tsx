@@ -11,6 +11,7 @@ import {
   type Node,
   type OnEdgesChange,
   type OnNodesChange,
+  type NodeTypes,
   type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -23,11 +24,12 @@ import {
 } from "../../../domain/workflow";
 import { AppNode } from "./nodes/AppNode";
 
-const nodeTypes = { appNode: AppNode };
+const nodeTypesDefault = { appNode: AppNode };
 
 type Props = {
   nodes: Array<Node<DefinitionNode>>;
   edges: Edge[];
+  nodeTypes?: NodeTypes;
   onNodesChange: OnNodesChange<Node<DefinitionNode>>;
   onEdgesChange: OnEdgesChange;
   onConnect: (params: Connection) => void;
@@ -40,6 +42,7 @@ type Props = {
 export function FlowCanvas({
   nodes,
   edges,
+  nodeTypes,
   onNodesChange,
   onEdgesChange,
   onConnect,
@@ -77,7 +80,7 @@ export function FlowCanvas({
   return (
     <Box sx={{ flex: 1, minWidth: 0, height: "100%", overflow: "hidden" }}>
       <ReactFlow
-        nodeTypes={nodeTypes}
+        nodeTypes={nodeTypes ?? nodeTypesDefault}
         nodes={nodes}
         edges={edges}
         onConnect={onConnect}

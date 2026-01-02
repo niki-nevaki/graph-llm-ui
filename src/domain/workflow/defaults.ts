@@ -6,6 +6,7 @@ import type {
   RelDbNodeConfig,
   TextNodeConfig,
   TgBotNodeConfig,
+  ToolNodeConfig,
 } from "./types";
 
 export function createDefaultNodeConfig(kind: "text"): TextNodeConfig;
@@ -13,6 +14,7 @@ export function createDefaultNodeConfig(kind: "tgBot"): TgBotNodeConfig;
 export function createDefaultNodeConfig(kind: "relDb"): RelDbNodeConfig;
 export function createDefaultNodeConfig(kind: "llm"): LlmNodeConfig;
 export function createDefaultNodeConfig(kind: "agent"): AgentNodeConfig;
+export function createDefaultNodeConfig(kind: "tool"): ToolNodeConfig;
 export function createDefaultNodeConfig(kind: NodeKind): NodeConfig {
   switch (kind) {
     case "text":
@@ -55,8 +57,11 @@ export function createDefaultNodeConfig(kind: NodeKind): NodeConfig {
         model: "",
         temperature: 0.2,
         system_prompt: "",
-        tools: [],
         use_memory: false,
       } satisfies AgentNodeConfig;
+    case "tool":
+      return {
+        fields: [],
+      } satisfies ToolNodeConfig;
   }
 }
