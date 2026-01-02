@@ -3,7 +3,7 @@ import { GraphEditor } from "../features/graphEditor/ui/GraphEditor";
 
 export function GraphEditorPage() {
   return (
-    <Box sx={{ height: "100%", width: "100%" }}>
+    <Box sx={{ flex: 1, minHeight: 0, width: "100%", display: "flex" }}>
       <GraphEditor />
     </Box>
   );

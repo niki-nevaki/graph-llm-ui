@@ -1,19 +1,22 @@
 import {
+  Autocomplete,
+  FormControlLabel,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   Stack,
+  Switch,
   TextField,
 } from "@mui/material";
 import type { AgentDefinitionNode } from "../../../../domain/workflow";
+import { AGENT_MODEL_OPTIONS } from "../../model/modelOptions";
 
 export function AgentNodeSettingsForm(props: {
   data: AgentDefinitionNode;
-  llmOptions: Array<{ id: string; name: string }>;
   onChange: (patch: Partial<AgentDefinitionNode["config"]>) => void;
 }) {
-  const { data, llmOptions, onChange } = props;
+  const { data, onChange } = props;
 
   return (
     <Stack spacing={1.25}>
@@ -30,42 +33,65 @@ export function AgentNodeSettingsForm(props: {
         </Select>
       </FormControl>
 
-      <FormControl size="medium" fullWidth>
-        <InputLabel>LLM node</InputLabel>
-        <Select
-          label="LLM node"
-          value={data.config.llmNodeId}
-          onChange={(e) => onChange({ llmNodeId: e.target.value as any })}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          {llmOptions.map((o) => (
-            <MenuItem key={o.id} value={o.id}>
-              {o.name} ({o.id})
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <TextField
-        label="Instructions"
-        size="medium"
+      <Autocomplete
+        options={AGENT_MODEL_OPTIONS}
+        value={data.config.model || null}
+        onChange={(_, value) => onChange({ model: value ?? "" })}
+        autoHighlight
         fullWidth
-        multiline
-        minRows={10}
-        value={data.config.instructions}
-        onChange={(e) => onChange({ instructions: e.target.value })}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Model"
+            size="medium"
+            placeholder="Select a model"
+          />
+        )}
       />
 
       <TextField
-        label="Max steps"
+        label="Temperature"
         size="medium"
         type="number"
-        value={data.config.maxSteps}
-        onChange={(e) => onChange({ maxSteps: Number(e.target.value) })}
-        inputProps={{ step: 1, min: 1 }}
+        value={data.config.temperature}
+        onChange={(e) => onChange({ temperature: Number(e.target.value) })}
+        inputProps={{ step: 0.1, min: 0, max: 2 }}
         sx={{ width: 200 }}
+      />
+
+      <TextField
+        label="System prompt"
+        size="medium"
+        fullWidth
+        multiline
+        minRows={4}
+        value={data.config.system_prompt}
+        onChange={(e) => onChange({ system_prompt: e.target.value })}
+      />
+
+      <TextField
+        label="Tools (comma-separated)"
+        size="medium"
+        fullWidth
+        value={(data.config.tools ?? []).join(", ")}
+        onChange={(e) =>
+          onChange({
+            tools: e.target.value
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean),
+          })
+        }
+      />
+
+      <FormControlLabel
+        control={
+          <Switch
+            checked={Boolean(data.config.use_memory)}
+            onChange={(e) => onChange({ use_memory: e.target.checked })}
+          />
+        }
+        label="Use memory"
       />
     </Stack>
   );

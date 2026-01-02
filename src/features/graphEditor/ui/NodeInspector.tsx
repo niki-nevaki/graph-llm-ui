@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { validateNode } from "../../../domain/workflow";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
@@ -38,7 +38,6 @@ type Props = {
   maxWidth?: number;
 
   selectedNode: { id: string; data: DefinitionNode } | null;
-  allNodes: Array<{ id: string; data: DefinitionNode }>;
 
   onClose: () => void;
   onUpdate: (nodeId: string, nextData: DefinitionNode) => void;
@@ -65,7 +64,6 @@ export function NodeInspector({
   maxWidth = 1400,
 
   selectedNode,
-  allNodes,
 
   onClose,
   onUpdate,
@@ -78,15 +76,6 @@ export function NodeInspector({
   useEffect(() => {
     setTab(0);
   }, [selectedNode?.id]);
-
-  // Build LLM node list for Agent form
-  const llmOptions = useMemo(
-    () =>
-      allNodes
-        .filter((n) => n.data.kind === "llm")
-        .map((n) => ({ id: n.id, name: n.data.name })),
-    [allNodes]
-  );
 
   // ---------- Resize logic ----------
   const startXRef = useRef(0);
@@ -305,7 +294,6 @@ export function NodeInspector({
 
                       <SettingsForm
                         data={data}
-                        llmOptions={llmOptions}
                         updateConfig={updateConfig}
                       />
                     </Box>
@@ -340,10 +328,9 @@ export function NodeInspector({
 
 function SettingsForm(props: {
   data: DefinitionNode;
-  llmOptions: Array<{ id: string; name: string }>;
   updateConfig: (patch: Partial<DefinitionNode["config"]>) => void;
 }) {
-  const { data, llmOptions, updateConfig } = props;
+  const { data, updateConfig } = props;
 
   switch (data.kind) {
     case "text":
@@ -378,7 +365,6 @@ function SettingsForm(props: {
       return (
         <AgentNodeSettingsForm
           data={data as AgentDefinitionNode}
-          llmOptions={llmOptions}
           onChange={updateConfig}
         />
       );

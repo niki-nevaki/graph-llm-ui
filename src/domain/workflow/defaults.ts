@@ -52,9 +52,11 @@ export function createDefaultNodeConfig(kind: NodeKind): NodeConfig {
     case "agent":
       return {
         mode: "task",
-        llmNodeId: "",
-        instructions: "",
-        maxSteps: 6,
+        model: "",
+        temperature: 0.2,
+        system_prompt: "",
+        tools: [],
+        use_memory: false,
       } satisfies AgentNodeConfig;
   }
 }

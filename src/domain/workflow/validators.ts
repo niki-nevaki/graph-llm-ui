@@ -46,12 +46,6 @@ export function validateNode(node: DefinitionNode): {
       if (!node.config.model.trim()) issues.push("Model is empty.");
       break;
     case "agent":
-      if (!node.config.instructions.trim()) {
-        issues.push("Agent instructions are empty.");
-      }
-      if (!node.config.llmNodeId.trim()) {
-        issues.push("LLM node id is empty.");
-      }
       break;
   }
 

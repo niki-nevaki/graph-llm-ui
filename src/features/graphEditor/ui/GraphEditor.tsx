@@ -117,11 +117,6 @@ export function GraphEditor() {
     return n ? { id: n.id, data: n.data } : null;
   }, [nodes, selectedNodeId]);
 
-  const allNodesForInspector = useMemo(
-    () => nodes.map((n) => ({ id: n.id, data: n.data })),
-    [nodes]
-  );
-
   const updateNodeData = useCallback(
     (nodeId: string, nextData: DefinitionNode) => {
       setNodes((nds) =>
@@ -140,8 +135,10 @@ export function GraphEditor() {
       <Box
         sx={{
           display: "flex",
-          height: "100%",
+          flex: 1,
+          minHeight: 0,
           width: "100%",
+          height: "100%",
           overflow: "hidden",
         }}
       >
@@ -163,7 +160,6 @@ export function GraphEditor() {
           open={inspectorOpen}
           width={inspectorWidth}
           selectedNode={selectedNode}
-          allNodes={allNodesForInspector}
           onClose={() => setInspectorOpen(false)}
           onUpdate={updateNodeData}
           onWidthChange={setInspectorWidth}

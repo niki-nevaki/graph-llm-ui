@@ -41,9 +41,11 @@ export type LlmNodeConfig = {
 
 export type AgentNodeConfig = {
   mode: "chat" | "task" | "planner";
-  llmNodeId: string;
-  instructions: string;
-  maxSteps: number;
+  model: string;
+  temperature: number;
+  system_prompt: string;
+  tools: string[];
+  use_memory: boolean;
 };
 
 export type NodeConfig =
