@@ -31,13 +31,15 @@ export function AgentNodeSettingsForm(props: {
     getIssue("config.model"),
     "config.model",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.model
   );
   const promptIssue = resolveFieldIssue(
     getIssue("config.system_prompt"),
     "config.system_prompt",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.system_prompt
   );
 
   return (

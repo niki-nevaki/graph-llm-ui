@@ -31,7 +31,8 @@ export function ToolNodeSettingsForm(props: {
     getIssue("config.toolName"),
     "config.toolName",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.toolName
   );
 
   return (

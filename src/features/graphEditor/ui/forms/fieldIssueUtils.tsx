@@ -11,13 +11,42 @@ export type FieldIssueState = {
   isWarning: boolean;
 };
 
+const isValueFilled = (value: unknown): boolean => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return Boolean(value.trim());
+  if (typeof value === "number") return !Number.isNaN(value);
+  if (typeof value === "boolean") return true;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") {
+    const mode = (value as { mode?: string }).mode;
+    if (mode === "expression") {
+      return Boolean((value as { expression?: string }).expression?.trim());
+    }
+    if (mode === "fromAI") {
+      const fromAI = (value as { fromAI?: { key?: string; description?: string; hint?: string } }).fromAI;
+      return Boolean(
+        fromAI?.key?.trim() || fromAI?.description?.trim() || fromAI?.hint?.trim()
+      );
+    }
+    if (mode === "fixed") {
+      return Boolean((value as { value?: string }).value?.trim());
+    }
+  }
+  return false;
+};
+
 export const resolveFieldIssue = (
   issue: Issue | undefined,
   fieldPath: string,
   focusFieldPath: string | null,
-  showFieldIssues: boolean
+  showFieldIssues: boolean,
+  currentValue?: unknown
 ): FieldIssueState => {
-  const show = Boolean(issue) && (showFieldIssues || focusFieldPath === fieldPath);
+  const hasValue = isValueFilled(currentValue);
+  const show =
+    Boolean(issue) &&
+    !hasValue &&
+    (showFieldIssues || focusFieldPath === fieldPath);
   const isError = show && issue?.severity === "error";
   const isWarning = show && issue?.severity === "warning";
   return { issue, show, isError, isWarning };

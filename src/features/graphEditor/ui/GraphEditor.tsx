@@ -28,7 +28,7 @@ import type { NodeRunStatus, Issue, GraphRunState } from "../model/runtime";
 import { runGraph } from "../model/runGraph";
 import { GraphRuntimeProvider } from "../model/runtimeContext";
 import { FlowCanvas } from "./FlowCanvas";
-import { GraphToolbar } from "./GraphToolbar";
+import { GraphCanvasActions } from "./GraphCanvasActions";
 import { IssuesPanel } from "./IssuesPanel";
 import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
@@ -559,21 +559,6 @@ function GraphEditorInner() {
           overflow: "hidden",
         }}
       >
-        <GraphToolbar
-          status={graphStatus}
-          hasNodes={nodes.length > 0}
-          errorsCount={errorsCount}
-          warningsCount={warningsCount}
-          showFieldIssues={showFieldIssues}
-          onExecute={onExecute}
-          onValidate={onValidate}
-          onStop={onStop}
-          onToggleIssues={() => setIssuesOpen((prev) => !prev)}
-          onToggleShowFieldIssues={() =>
-            setShowFieldIssues((prev) => !prev)
-          }
-        />
-
         <Box
           sx={{
             display: "flex",
@@ -597,18 +582,31 @@ function GraphEditorInner() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onCreateNode={onCreateNode}
-          onNodeClick={(_, node) => {
-            if (toolDraft) return;
-            setSelectedNodeId(node.id);
-            setInspectorOpen(true);
-            setFocusFieldPath(null);
-          }}
-          onPaneClick={() => {
-            if (toolDraft) return;
-            setSelectedNodeId(null);
-            setFocusFieldPath(null);
-          }}
-        />
+            onNodeClick={(_, node) => {
+              if (toolDraft) return;
+              setSelectedNodeId(node.id);
+              setInspectorOpen(true);
+              setFocusFieldPath(null);
+            }}
+            onPaneClick={() => {
+              if (toolDraft) return;
+              setSelectedNodeId(null);
+              setFocusFieldPath(null);
+            }}
+            canvasActions={
+              <GraphCanvasActions
+                hasNodes={nodes.length > 0}
+                isRunning={graphStatus === "running" || graphStatus === "validating"}
+                showFieldIssues={showFieldIssues}
+                onExecute={onExecute}
+                onValidate={onValidate}
+                onStop={onStop}
+                onToggleShowFieldIssues={() =>
+                  setShowFieldIssues((prev) => !prev)
+                }
+              />
+            }
+          />
           <NodeInspector
             open={inspectorOpen}
             width={inspectorWidth}
@@ -640,7 +638,6 @@ function GraphEditorInner() {
           nodes={nodes}
           edges={edges}
           onToggleOpen={() => setIssuesOpen((prev) => !prev)}
-          onStop={onStop}
           onSelectIssue={onSelectIssue}
         />
       </Box>

@@ -58,6 +58,7 @@ type Props = {
   onNodeClick: (event: React.MouseEvent, node: Node<DefinitionNode>) => void;
   onPaneClick: () => void;
   defaultViewport?: Viewport;
+  canvasActions?: React.ReactNode;
 };
 
 export function FlowCanvas({
@@ -78,6 +79,7 @@ export function FlowCanvas({
   onNodeClick,
   onPaneClick,
   defaultViewport,
+  canvasActions,
 }: Props) {
   const { screenToFlowPosition } = useReactFlow();
   const theme = useTheme();
@@ -174,6 +176,7 @@ export function FlowCanvas({
         <Background />
         <Controls />
         <MiniMap />
+        {canvasActions}
       </ReactFlow>
       {nodes.length === 0 ? (
         <Box

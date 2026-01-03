@@ -1,9 +1,9 @@
+import AndroidIcon from "@mui/icons-material/Android";
 import BuildIcon from "@mui/icons-material/Build";
+import ForumIcon from "@mui/icons-material/Forum";
 import PsychologyIcon from "@mui/icons-material/Psychology";
 import StorageIcon from "@mui/icons-material/Storage";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import TelegramIcon from "@mui/icons-material/Telegram";
-import TextFieldsIcon from "@mui/icons-material/TextFields";
 import type { ComponentType } from "react";
 import { Position } from "@xyflow/react";
 
@@ -28,7 +28,7 @@ export const NODE_SPECS: Record<NodeKind, NodeSpec> = {
     kind: "text",
     title: "Текст",
     group: "Входы",
-    Icon: TextFieldsIcon,
+    Icon: ForumIcon,
     inLabel: "вход",
     outLabel: "текст",
   },
@@ -60,7 +60,7 @@ export const NODE_SPECS: Record<NodeKind, NodeSpec> = {
     kind: "agent",
     title: "Агент",
     group: "ИИ",
-    Icon: SupportAgentIcon,
+    Icon: AndroidIcon,
     inLabel: "вход",
     outLabel: "выход",
     toolHandle: {

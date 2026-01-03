@@ -696,43 +696,50 @@ export function GoogleSheetsToolForm(props: {
     getIssue("config.googleSheets.resource"),
     "config.googleSheets.resource",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.resource
   );
   const operationIssue = resolveFieldIssue(
     getIssue("config.googleSheets.operation"),
     "config.googleSheets.operation",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.operation
   );
   const documentUrlIssue = resolveFieldIssue(
     getIssue("config.googleSheets.selectors.documentUrl"),
     "config.googleSheets.selectors.documentUrl",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.selectors.documentUrl
   );
   const documentIdIssue = resolveFieldIssue(
     getIssue("config.googleSheets.selectors.spreadsheetId"),
     "config.googleSheets.selectors.spreadsheetId",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.selectors.spreadsheetId
   );
   const sheetUrlIssue = resolveFieldIssue(
     getIssue("config.googleSheets.selectors.sheetUrl"),
     "config.googleSheets.selectors.sheetUrl",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.selectors.sheetUrl
   );
   const sheetIdIssue = resolveFieldIssue(
     getIssue("config.googleSheets.selectors.sheetId"),
     "config.googleSheets.selectors.sheetId",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.selectors.sheetId
   );
   const sheetNameIssue = resolveFieldIssue(
     getIssue("config.googleSheets.selectors.sheetName"),
     "config.googleSheets.selectors.sheetName",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.selectors.sheetName
   );
 
   const applyDocumentIdFromUrl = () => {

@@ -47,7 +47,6 @@ export function createDefaultNodeConfig(kind: NodeKind): NodeConfig {
     case "llm":
       return {
         provider: "openai",
-        apiKey: "",
         model: "gpt-4o-mini",
         systemPrompt: "",
         temperature: 0.2,

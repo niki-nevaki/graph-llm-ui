@@ -27,19 +27,22 @@ export function RelDbNodeSettingsForm(props: {
     getIssue("config.host"),
     "config.host",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.host
   );
   const dbIssue = resolveFieldIssue(
     getIssue("config.database"),
     "config.database",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.database
   );
   const tableIssue = resolveFieldIssue(
     getIssue("config.table"),
     "config.table",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.table
   );
 
   return (

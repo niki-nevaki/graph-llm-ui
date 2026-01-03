@@ -3,7 +3,6 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
-import StopIcon from "@mui/icons-material/Stop";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   Box,
@@ -51,7 +50,6 @@ const FIELD_LABELS: Record<string, string> = {
   "config.host": "Хост",
   "config.database": "База данных",
   "config.table": "Таблица",
-  "config.apiKey": "API-ключ",
   "config.model": "Модель",
   "config.system_prompt": "Системный промпт",
   "config.toolName": "Инструмент",
@@ -125,7 +123,6 @@ type Props = {
   nodes: Array<Node<DefinitionNode>>;
   edges: Edge[];
   onToggleOpen: () => void;
-  onStop: () => void;
   onSelectIssue: (issue: Issue) => void;
 };
 
@@ -140,7 +137,6 @@ export function IssuesPanel({
   nodes,
   edges,
   onToggleOpen,
-  onStop,
   onSelectIssue,
 }: Props) {
   const [tab, setTab] = useState(0);
@@ -308,21 +304,6 @@ export function IssuesPanel({
         ) : null}
 
         <Box sx={{ flex: 1 }} />
-
-        {isRunning ? (
-          <Tooltip title="Остановить">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(event) => {
-                event.stopPropagation();
-                onStop();
-              }}
-            >
-              <StopIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        ) : null}
 
         <IconButton
           size="small"

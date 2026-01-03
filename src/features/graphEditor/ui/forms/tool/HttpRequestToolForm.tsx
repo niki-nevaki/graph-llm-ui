@@ -349,13 +349,15 @@ export function HttpRequestToolForm(props: {
     getIssue("config.httpRequest.base.method"),
     "config.httpRequest.base.method",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.base.method
   );
   const urlIssue = resolveFieldIssue(
     getIssue("config.httpRequest.base.url"),
     "config.httpRequest.base.url",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    config.base.url
   );
 
   return (

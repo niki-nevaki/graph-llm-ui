@@ -48,7 +48,6 @@ export type RelDbNodeConfig = {
 
 export type LlmNodeConfig = {
   provider: "openai" | "anthropic" | "azure";
-  apiKey: string;
   model: string;
   systemPrompt: string;
   temperature: number;

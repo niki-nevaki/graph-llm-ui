@@ -7,12 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import type { LlmDefinitionNode } from "../../../../domain/workflow";
-import {
-  buildFieldAdornment,
-  buildHelperText,
-  buildWarningSx,
-  resolveFieldIssue,
-} from "./fieldIssueUtils";
+import { buildFieldAdornment, buildHelperText, buildWarningSx, resolveFieldIssue } from "./fieldIssueUtils";
 import type { Issue } from "../../model/runtime";
 
 export function LlmNodeSettingsForm(props: {
@@ -23,17 +18,12 @@ export function LlmNodeSettingsForm(props: {
   showFieldIssues: boolean;
 }) {
   const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
-  const apiKeyIssue = resolveFieldIssue(
-    getIssue("config.apiKey"),
-    "config.apiKey",
-    focusFieldPath,
-    showFieldIssues
-  );
   const modelIssue = resolveFieldIssue(
     getIssue("config.model"),
     "config.model",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.model
   );
 
   return (
@@ -50,22 +40,6 @@ export function LlmNodeSettingsForm(props: {
           <MenuItem value="azure">Azure</MenuItem>
         </Select>
       </FormControl>
-
-      <TextField
-        label="API-ключ"
-        size="medium"
-        type="password"
-        fullWidth
-        value={data.config.apiKey}
-        onChange={(e) => onChange({ apiKey: e.target.value })}
-        inputProps={{ "data-field-path": "config.apiKey" }}
-        error={apiKeyIssue.isError}
-        helperText={buildHelperText(apiKeyIssue)}
-        InputProps={{
-          endAdornment: buildFieldAdornment(apiKeyIssue),
-        }}
-        sx={buildWarningSx(apiKeyIssue)}
-      />
 
       <TextField
         label="Модель"

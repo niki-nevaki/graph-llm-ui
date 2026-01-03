@@ -27,13 +27,15 @@ export function TgBotNodeSettingsForm(props: {
     getIssue("config.token"),
     "config.token",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.token
   );
   const chatIssue = resolveFieldIssue(
     getIssue("config.chatId"),
     "config.chatId",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.chatId
   );
 
   return (

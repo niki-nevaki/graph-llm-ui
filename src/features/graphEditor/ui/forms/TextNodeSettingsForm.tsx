@@ -22,13 +22,15 @@ export function TextNodeSettingsForm(props: {
     getIssue("config.text"),
     "config.text",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.text
   );
   const fileIssue = resolveFieldIssue(
     getIssue("config.fileName"),
     "config.fileName",
     focusFieldPath,
-    showFieldIssues
+    showFieldIssues,
+    data.config.fileName
   );
 
   return (

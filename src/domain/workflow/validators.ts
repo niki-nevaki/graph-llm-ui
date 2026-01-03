@@ -66,7 +66,6 @@ export function validateNode(node: DefinitionNode): {
       }
       break;
     case "llm":
-      if (!node.config.apiKey.trim()) issues.push("LLM API key is empty.");
       if (!node.config.model.trim()) issues.push("Model is empty.");
       break;
     case "agent":

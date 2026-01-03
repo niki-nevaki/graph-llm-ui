@@ -156,17 +156,6 @@ export const NODE_TYPE_REGISTRY: Record<NodeKind, NodeTypeDefinition> = {
     validate: (node) => {
       if (node.kind !== "llm") return [];
       const issues: Issue[] = [];
-      if (!node.config.apiKey.trim()) {
-        issues.push(
-          createIssue({
-            severity: "error",
-            kind: "field",
-            message: "API-ключ обязателен.",
-            nodeId: node.id,
-            fieldPath: "config.apiKey",
-          })
-        );
-      }
       if (!node.config.model.trim()) {
         issues.push(
           createIssue({
@@ -187,6 +176,7 @@ export const NODE_TYPE_REGISTRY: Record<NodeKind, NodeTypeDefinition> = {
       inputs: [
         { id: "in", label: "in", direction: "input", dataType: "any", required: true },
         { id: "tool", label: "tool", direction: "input", dataType: "any" },
+        { id: "memory", label: "memory", direction: "input", dataType: "any" },
       ],
       outputs: basePorts.outputs,
     },
