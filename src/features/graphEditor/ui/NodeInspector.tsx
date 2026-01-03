@@ -43,6 +43,7 @@ type Props = {
   maxWidth?: number;
 
   selectedNode: { id: string; data: DefinitionNode } | null;
+  activeTabId?: "general" | "json";
   focusFieldPath?: string | null;
   fieldIssueMap?: Record<string, Issue>;
   showFieldIssues?: boolean;
@@ -53,6 +54,7 @@ type Props = {
 
   onClose: () => void;
   onUpdate: (nodeId: string, nextData: DefinitionNode) => void;
+  onTabChange?: (tabId: "general" | "json") => void;
   onWidthChange: (w: number) => void;
 };
 
@@ -81,6 +83,7 @@ export function NodeInspector({
   maxWidth = 1400,
 
   selectedNode,
+  activeTabId,
   focusFieldPath,
   fieldIssueMap = {},
   showFieldIssues = false,
@@ -88,21 +91,36 @@ export function NodeInspector({
 
   onClose,
   onUpdate,
+  onTabChange,
   onWidthChange,
 }: Props) {
   // Tabs: 0=General(+Settings), 1=JSON
   const [tab, setTab] = useState(0);
+  const lastActiveTabId = useRef<"general" | "json">("general");
+  const tabIdFromIndex = (index: number) => (index === 1 ? "json" : "general");
+  const tabIndexFromId = (id: "general" | "json") => (id === "json" ? 1 : 0);
 
   // Reset tab when selection changes
   useEffect(() => {
     setTab(0);
-  }, [selectedNode?.id]);
+    lastActiveTabId.current = "general";
+    onTabChange?.("general");
+  }, [selectedNode?.id, onTabChange]);
 
   useEffect(() => {
     if (focusFieldPath) {
       setTab(0);
+      lastActiveTabId.current = "general";
+      onTabChange?.("general");
     }
-  }, [focusFieldPath]);
+  }, [focusFieldPath, onTabChange]);
+
+  useEffect(() => {
+    if (!activeTabId) return;
+    if (activeTabId === lastActiveTabId.current) return;
+    lastActiveTabId.current = activeTabId;
+    setTab(tabIndexFromId(activeTabId));
+  }, [activeTabId]);
 
   const getIssueForField = useCallback(
     (fieldPath: string) => {
@@ -356,7 +374,12 @@ export function NodeInspector({
               {/* Tabs: only 2 now, borderBottom only */}
               <Tabs
                 value={tab}
-                onChange={(_, v2) => setTab(v2)}
+                onChange={(_, v2) => {
+                  setTab(v2);
+                  const nextId = tabIdFromIndex(v2);
+                  lastActiveTabId.current = nextId;
+                  onTabChange?.(nextId);
+                }}
                 variant="fullWidth"
                 sx={{ px: 1, borderBottom: 1, borderColor: "divider" }}
               >

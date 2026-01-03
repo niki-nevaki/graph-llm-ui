@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-01-03T01:59:12.548Z",
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "type": "appNode",
+        "position": {
+          "x": 160,
+          "y": 120
+        },
+        "data": {
+          "id": "1",
+          "name": "Текст",
+          "enabled": true,
+          "meta": {
+            "description": ""
+          },
+          "kind": "text",
+          "config": {
+            "mode": "inline",
+            "text": "Привет",
+            "fileName": ""
+          }
+        },
+        "ui": {
+          "selected": false
+        },
+        "dimensions": {
+          "width": null,
+          "height": null
+        }
+      },
+      {
+        "id": "3",
+        "type": "appNode",
+        "position": {
+          "x": 396.0226111548591,
+          "y": 107.65905563317025
+        },
+        "data": {
+          "id": "3",
+          "name": "Агент",
+          "enabled": true,
+          "meta": {
+            "description": ""
+          },
+          "kind": "agent",
+          "config": {
+            "mode": "task",
+            "model": "gpt_oss_120B",
+            "temperature": 0.2,
+            "system_prompt": "йцу",
+            "use_memory": false
+          }
+        },
+        "ui": {
+          "selected": false
+        },
+        "dimensions": {
+          "width": null,
+          "height": null
+        }
+      },
+      {
+        "id": "4",
+        "type": "appNode",
+        "position": {
+          "x": 396.0226111548591,
+          "y": 327.6590556331703
+        },
+        "data": {
+          "id": "4",
+          "kind": "tool",
+          "name": "HTTP-запрос",
+          "enabled": true,
+          "meta": {
+            "description": "Выполняет HTTP-запрос и возвращает ответ."
+          },
+          "config": {
+            "toolId": "http_request",
+            "toolName": "HTTP-запрос",
+            "httpRequest": {
+              "base": {
+                "method": "GET",
+                "url": "123",
+                "authentication": {
+                  "authType": "none",
+                  "credentialRef": {},
+                  "inlineAuth": {}
+                }
+              },
+              "query": {
+                "sendQueryParameters": false,
+                "queryParamsMode": "fields",
+                "queryParameters": [],
+                "queryParametersJson": ""
+              },
+              "headers": {
+                "sendHeaders": false,
+                "headersMode": "fields",
+                "headerParameters": [],
+                "headerParametersJson": ""
+              },
+              "body": {
+                "sendBody": false,
+                "bodyContentType": "json",
+                "bodyParameters": [],
+                "jsonBody": "",
+                "rawBody": "",
+                "rawContentType": "application/json",
+                "inputDataFieldName": ""
+              },
+              "options": {
+                "arrayFormatInQuery": "repeat",
+                "batching": {
+                  "enabled": false,
+                  "itemsPerBatch": 50,
+                  "batchIntervalMs": 0
+                },
+                "ignoreSslIssues": false,
+                "lowercaseHeaders": false,
+                "redirects": {
+                  "enabled": true,
+                  "maxRedirects": 10
+                },
+                "responseOptions": {
+                  "includeHeaders": false,
+                  "includeStatusCode": false,
+                  "neverError": false,
+                  "responseFormat": "autodetect",
+                  "putOutputInField": "data"
+                },
+                "pagination": {
+                  "mode": "off",
+                  "configJson": ""
+                },
+                "proxy": "",
+                "timeoutMs": 0
+              },
+              "toolOnly": {
+                "optimizeResponse": false,
+                "optimizeResponseType": "json",
+                "jsonOptimize": {
+                  "fieldContainingData": "",
+                  "includeFieldsMode": "all",
+                  "fieldsList": []
+                },
+                "htmlOptimize": {
+                  "selectorCss": "",
+                  "returnOnlyContent": true,
+                  "elementsToOmit": "",
+                  "truncateResponse": false,
+                  "maxResponseCharacters": 0
+                },
+                "textOptimize": {
+                  "truncateResponse": false,
+                  "maxResponseCharacters": 0
+                }
+              }
+            }
+          }
+        },
+        "ui": {
+          "selected": true
+        },
+        "dimensions": {
+          "width": null,
+          "height": null
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-4-3-tool",
+        "source": "4",
+        "target": "3",
+        "sourceHandle": "out",
+        "targetHandle": "tool",
+        "type": "custom"
+      },
+      {
+        "id": "xy-edge__1out-3in",
+        "source": "1",
+        "target": "3",
+        "sourceHandle": "out",
+        "targetHandle": "in",
+        "type": "custom",
+        "markerEnd": {
+          "type": "arrowclosed",
+          "width": 16,
+          "height": 16,
+          "strokeWidth": 2,
+          "color": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  "editorState": {
+    "viewport": {
+      "x": -1.8237417126021,
+      "y": 65.95799158517121,
+      "zoom": 1.05
+    },
+    "selection": {
+      "selectedNodeIds": ["4"],
+      "selectedEdgeIds": [],
+      "activeNodeId": "3"
+    },
+    "sidebar": {
+      "isOpen": true,
+      "activeTabId": "general",
+      "width": 520
+    },
+    "panels": {
+      "issuesPanel": {
+        "isOpen": false,
+        "activeTab": null
+      }
+    },
+    "settings": {
+      "showFieldIssues": true
+    }
+  }
+}

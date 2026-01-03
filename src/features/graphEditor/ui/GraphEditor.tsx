@@ -24,6 +24,7 @@ import {
 } from "../../../domain/workflow";
 import { DEFAULT_EDITOR_STATE } from "../model/editorState";
 import { validateGraphOnSubmit } from "../model/graphValidation";
+import { applyGraphExport } from "../model/graphImport";
 import type { NodeRunStatus, Issue, GraphRunState } from "../model/runtime";
 import { runGraph } from "../model/runGraph";
 import { GraphRuntimeProvider } from "../model/runtimeContext";
@@ -34,7 +35,7 @@ import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
 import { CustomEdge } from "./edges/CustomEdge";
 import { buildGraphExportPayload } from "../model/graphExport";
-import { saveGraph } from "../../../api/graphs/graphsApi";
+import { getGraph, saveGraph } from "../../../api/graphs/graphsApi";
 import { AppNode } from "./nodes/AppNode";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 import type { ToolOption } from "../model/toolOptions";
@@ -142,6 +143,9 @@ function GraphEditorInner() {
   const [inspectorWidth, setInspectorWidth] = useState(
     DEFAULT_EDITOR_STATE.inspectorWidth
   );
+  const [inspectorTabId, setInspectorTabId] = useState<"general" | "json">(
+    "general"
+  );
   const [inspectorOpen, setInspectorOpen] = useState(
     DEFAULT_EDITOR_STATE.inspectorOpen
   );
@@ -218,6 +222,7 @@ function GraphEditorInner() {
       selectedNodeId,
       inspectorOpen,
       inspectorWidth,
+      inspectorTabId,
       issuesOpen,
       showFieldIssues,
     });
@@ -225,11 +230,62 @@ function GraphEditorInner() {
   }, [
     inspectorOpen,
     inspectorWidth,
+    inspectorTabId,
     issuesOpen,
     reactFlow,
     selectedNodeId,
     showFieldIssues,
   ]);
+
+  const onLoad = useCallback(async () => {
+    if (graphStatus === "running" || graphStatus === "validating") return;
+    setGraphStatus("validating");
+    const payload = await getGraph("mock");
+    const result = applyGraphExport(payload);
+
+    setNodes(result.nodes);
+    setEdges(result.edges);
+
+    const editorState = result.editorState;
+    if (editorState?.selection) {
+      setSelectedNodeId(editorState.selection.activeNodeId ?? null);
+    } else {
+      setSelectedNodeId(null);
+    }
+
+    if (editorState?.sidebar) {
+      setInspectorOpen(Boolean(editorState.sidebar.isOpen));
+      if (typeof editorState.sidebar.width === "number") {
+        setInspectorWidth(editorState.sidebar.width);
+      }
+      if (editorState.sidebar.activeTabId === "json") {
+        setInspectorTabId("json");
+      } else {
+        setInspectorTabId("general");
+      }
+    }
+
+    if (editorState?.panels?.issuesPanel) {
+      setIssuesOpen(Boolean(editorState.panels.issuesPanel.isOpen));
+    }
+
+    if (editorState?.settings) {
+      setShowFieldIssues(Boolean(editorState.settings.showFieldIssues));
+    }
+
+    setToolDraft(null);
+    setFocusFieldPath(null);
+    setIssues([]);
+
+    if (editorState?.viewport) {
+      const viewport = editorState.viewport;
+      requestAnimationFrame(() => {
+        reactFlow.setViewport(viewport, { duration: 0 });
+      });
+    }
+
+    setGraphStatus("idle");
+  }, [graphStatus, reactFlow, setEdges, setNodes]);
 
   const onCreateNode = useCallback(
     (kind: NodeKind, position: { x: number; y: number }) => {
@@ -631,6 +687,7 @@ function GraphEditorInner() {
                 onValidate={onValidate}
                 onStop={onStop}
                 onExport={onExport}
+                onLoad={onLoad}
                 onToggleShowFieldIssues={() =>
                   setShowFieldIssues((prev) => !prev)
                 }
@@ -641,6 +698,7 @@ function GraphEditorInner() {
             open={inspectorOpen}
             width={inspectorWidth}
             selectedNode={selectedNode}
+            activeTabId={inspectorTabId}
             focusFieldPath={focusFieldPath}
             fieldIssueMap={fieldIssueMap}
             showFieldIssues={showFieldIssues}
@@ -653,6 +711,7 @@ function GraphEditorInner() {
               setInspectorOpen(false);
             }}
             onUpdate={updateNodeData}
+            onTabChange={setInspectorTabId}
             onWidthChange={setInspectorWidth}
           />
         </Box>

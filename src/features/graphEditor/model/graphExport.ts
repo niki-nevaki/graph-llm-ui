@@ -14,6 +14,7 @@ type BuildGraphExportInput = {
   selectedNodeId: string | null;
   inspectorOpen: boolean;
   inspectorWidth: number;
+  inspectorTabId?: string | null;
   issuesOpen: boolean;
   showFieldIssues: boolean;
 };
@@ -67,7 +68,7 @@ export function buildGraphExportPayload(
     },
     sidebar: {
       isOpen: input.inspectorOpen,
-      activeTabId: "general",
+      activeTabId: input.inspectorTabId ?? "general",
       width: input.inspectorWidth,
     },
     panels: {
