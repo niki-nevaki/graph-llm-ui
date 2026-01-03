@@ -64,12 +64,12 @@ export function CredentialCreatePage() {
     if (!selectedType) {
       return (
         <Stack spacing={2} sx={{ maxWidth: 560 }}>
-          <Typography variant="h5">Create credential</Typography>
+          <Typography variant="h5">Создать учетные данные</Typography>
           <Typography variant="body2" color="text.secondary">
-            Choose the type of credential you want to create.
+            Выберите тип учетных данных, которые хотите создать.
           </Typography>
           <Button variant="contained" onClick={() => setShowPicker(true)}>
-            Choose credential type
+            Выбрать тип
           </Button>
         </Stack>
       );

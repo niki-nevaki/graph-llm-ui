@@ -16,7 +16,7 @@ export function useCredentialTypes() {
       const response = await listCredentialTypes();
       setItems(response);
     } catch (err) {
-      setError(isApiError(err) ? err : { message: "Failed to load types" });
+      setError(isApiError(err) ? err : { message: "Не удалось загрузить типы" });
     } finally {
       setLoading(false);
     }

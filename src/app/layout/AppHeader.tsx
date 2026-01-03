@@ -1,11 +1,13 @@
-import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, IconButton, Toolbar } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
+import { HeaderAuthWidget, useAuth } from "../../features/auth";
 import { useColorMode } from "../providers/ColorModeProvider";
 
-export function AppHeader({ userName }: { userName: string }) {
+export function AppHeader() {
   const { mode, toggleMode } = useColorMode();
+  const { status } = useAuth();
   const location = useLocation();
-  const isGraphRoute = location.pathname.startsWith("/graph");
+  const isGraphRoute = location.pathname.startsWith("/graphs");
   const isCredentialsRoute = location.pathname.startsWith("/credentials");
 
   const emoji = mode === "dark" ? "☀️" : "🌙";
@@ -46,43 +48,44 @@ export function AppHeader({ userName }: { userName: string }) {
       >
         {/* слева можно оставить пусто/логотип/название */}
         <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1 }}>
-          <Button
-            component={RouterLink}
-            to="/graph"
-            sx={{
-              ...navButtonBaseSx,
-              ...(isGraphRoute && {
-                color: "text.primary",
-                bgcolor: "action.selected",
-              }),
-            }}
-          >
-            Граф
-          </Button>
-          <Button
-            component={RouterLink}
-            to="/credentials"
-            sx={{
-              ...navButtonBaseSx,
-              ...(isCredentialsRoute && {
-                color: "text.primary",
-                bgcolor: "action.selected",
-              }),
-            }}
-          >
-            Креденшелы
-          </Button>
+          {status === "auth" && (
+            <>
+              <Button
+                component={RouterLink}
+                to="/graphs"
+                sx={{
+                  ...navButtonBaseSx,
+                  ...(isGraphRoute && {
+                    color: "text.primary",
+                    bgcolor: "action.selected",
+                  }),
+                }}
+              >
+                Мои графы
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/credentials"
+                sx={{
+                  ...navButtonBaseSx,
+                  ...(isCredentialsRoute && {
+                    color: "text.primary",
+                    bgcolor: "action.selected",
+                  }),
+                }}
+              >
+                Креденшелы
+              </Button>
+            </>
+          )}
         </Box>
 
-        {/* правый угол: слева-направо toggle + username */}
+        {/* правый угол: слева-направо toggle + auth widget */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton aria-label={nextLabel} onClick={toggleMode} size="medium">
             <span style={{ fontSize: 18, lineHeight: 1 }}>{emoji}</span>
           </IconButton>
-
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            {userName}
-          </Typography>
+          <HeaderAuthWidget />
         </Box>
       </Toolbar>
     </AppBar>

@@ -117,7 +117,7 @@ export function CredentialEditorForm({
   const validate = () => {
     const nextErrors: Record<string, string> = {};
     if (!name.trim()) {
-      nextErrors.name = "Required";
+      nextErrors.name = "Обязательное поле";
     }
 
     sortedFields.forEach((field) => {
@@ -128,7 +128,7 @@ export function CredentialEditorForm({
             ? state.value.length > 0
             : state.isSet;
           if (!hasValue) {
-            nextErrors[field.name] = "Required";
+            nextErrors[field.name] = "Обязательное поле";
           }
         }
         return;
@@ -137,22 +137,22 @@ export function CredentialEditorForm({
       const value = data[field.name];
       const hasValue = value !== undefined && value !== "" && value !== null;
       if (field.required && !hasValue) {
-        nextErrors[field.name] = "Required";
+        nextErrors[field.name] = "Обязательное поле";
         return;
       }
       if (field.validation && hasValue && typeof value === "string") {
         const { min, max, pattern } = field.validation;
         if (min !== undefined && value.length < min) {
-          nextErrors[field.name] = `Min length ${min}`;
+          nextErrors[field.name] = `Минимальная длина ${min}`;
         }
         if (max !== undefined && value.length > max) {
-          nextErrors[field.name] = `Max length ${max}`;
+          nextErrors[field.name] = `Максимальная длина ${max}`;
         }
         if (pattern) {
           try {
             const re = new RegExp(pattern);
             if (!re.test(value)) {
-              nextErrors[field.name] = "Invalid format";
+              nextErrors[field.name] = "Неверный формат";
             }
           } catch {
             // ignore invalid regex in schema
@@ -181,7 +181,7 @@ export function CredentialEditorForm({
         setFormError(err.message);
         setFieldErrors(err.fieldErrors ?? {});
       } else {
-        setFormError("Failed to save credential");
+        setFormError("Не удалось сохранить учетные данные");
       }
     }
   };
@@ -190,7 +190,7 @@ export function CredentialEditorForm({
     <Stack spacing={3} sx={{ maxWidth: 720, width: "100%" }}>
       <Box>
         <Typography variant="h5" sx={{ mb: 0.5 }}>
-          {mode === "create" ? "New credential" : "Edit credential"}
+          {mode === "create" ? "Новые учетные данные" : "Редактировать учетные данные"}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {typeDefinition.displayName}
@@ -198,7 +198,7 @@ export function CredentialEditorForm({
       </Box>
 
       <TextField
-        label="Name"
+        label="Название"
         value={name}
         onChange={(event) => setName(event.target.value)}
         required
@@ -238,10 +238,10 @@ export function CredentialEditorForm({
           onClick={handleSubmit}
           disabled={saving}
         >
-          {mode === "create" ? "Save" : "Save changes"}
+          {mode === "create" ? "Сохранить" : "Сохранить изменения"}
         </Button>
         <Button variant="text" onClick={onCancel} disabled={saving}>
-          Cancel
+          Отмена
         </Button>
         {mode === "edit" && onDelete && (
           <Button
@@ -250,7 +250,7 @@ export function CredentialEditorForm({
             onClick={onDelete}
             disabled={saving}
           >
-            Delete
+            Удалить
           </Button>
         )}
       </Stack>

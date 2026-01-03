@@ -46,18 +46,18 @@ export function CredentialTypePickerDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Choose credential type</DialogTitle>
+      <DialogTitle>Выберите тип учетных данных</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            placeholder="Search credential types"
+            placeholder="Поиск типов учетных данных"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             fullWidth
           />
           {loading ? (
             <Typography variant="body2" color="text.secondary">
-              Loading types...
+              Загрузка типов...
             </Typography>
           ) : (
             <List sx={{ maxHeight: 360, overflow: "auto" }}>
@@ -78,7 +78,7 @@ export function CredentialTypePickerDialog({
               {filtered.length === 0 && (
                 <Box sx={{ p: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    No matching types
+                    Нет совпадений
                   </Typography>
                 </Box>
               )}

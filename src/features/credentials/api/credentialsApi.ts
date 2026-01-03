@@ -24,12 +24,12 @@ const mockOwner = { id: "me", name: "Пользователь" };
 const credentialTypes: CredentialTypeDefinition[] = [
   {
     type: "httpBasicAuth",
-    displayName: "HTTP Basic Auth",
-    description: "Username + password for HTTP requests.",
+    displayName: "HTTP Basic авторизация",
+    description: "Логин и пароль для HTTP-запросов.",
     fields: [
       {
         name: "username",
-        label: "Username",
+        label: "Логин",
         type: "string",
         required: true,
         placeholder: "user@example.com",
@@ -37,7 +37,7 @@ const credentialTypes: CredentialTypeDefinition[] = [
       },
       {
         name: "password",
-        label: "Password",
+        label: "Пароль",
         type: "password",
         required: true,
         sensitive: true,
@@ -47,12 +47,12 @@ const credentialTypes: CredentialTypeDefinition[] = [
   },
   {
     type: "apiKey",
-    displayName: "API Key",
-    description: "API key sent in header or query.",
+    displayName: "API-ключ",
+    description: "API-ключ, отправляемый в заголовке или строке запроса.",
     fields: [
       {
         name: "keyName",
-        label: "Key name",
+        label: "Название ключа",
         type: "string",
         required: true,
         default: "Authorization",
@@ -60,7 +60,7 @@ const credentialTypes: CredentialTypeDefinition[] = [
       },
       {
         name: "keyValue",
-        label: "Key value",
+        label: "Значение ключа",
         type: "password",
         required: true,
         sensitive: true,
@@ -68,12 +68,12 @@ const credentialTypes: CredentialTypeDefinition[] = [
       },
       {
         name: "addTo",
-        label: "Add to",
+        label: "Добавлять в",
         type: "select",
         required: true,
         options: [
-          { label: "Header", value: "header" },
-          { label: "Query", value: "query" },
+          { label: "Заголовок", value: "header" },
+          { label: "Параметр запроса", value: "query" },
         ],
         default: "header",
         ui: { order: 3 },
@@ -83,11 +83,11 @@ const credentialTypes: CredentialTypeDefinition[] = [
   {
     type: "openAi",
     displayName: "OpenAI",
-    description: "OpenAI API key and optional base URL.",
+    description: "API-ключ OpenAI и необязательный базовый URL.",
     fields: [
       {
         name: "apiKey",
-        label: "API key",
+        label: "API-ключ",
         type: "password",
         required: true,
         sensitive: true,
@@ -95,7 +95,7 @@ const credentialTypes: CredentialTypeDefinition[] = [
       },
       {
         name: "baseUrl",
-        label: "Base URL",
+        label: "Базовый URL",
         type: "string",
         placeholder: "https://api.openai.com",
         ui: { order: 2 },
@@ -205,26 +205,26 @@ function validatePayload(
     if (field.required) {
       if (isSecret) {
         if (!hasValue && !metaIsSet) {
-          fieldErrors[field.name] = "Required";
+          fieldErrors[field.name] = "Обязательное поле";
         }
       } else if (!hasValue) {
-        fieldErrors[field.name] = "Required";
+        fieldErrors[field.name] = "Обязательное поле";
       }
     }
 
     if (field.validation && hasValue && typeof effectiveValue === "string") {
       const { min, max, pattern } = field.validation;
       if (min !== undefined && effectiveValue.length < min) {
-        fieldErrors[field.name] = `Min length ${min}`;
+        fieldErrors[field.name] = `Минимальная длина ${min}`;
       }
       if (max !== undefined && effectiveValue.length > max) {
-        fieldErrors[field.name] = `Max length ${max}`;
+        fieldErrors[field.name] = `Максимальная длина ${max}`;
       }
       if (pattern) {
         try {
           const re = new RegExp(pattern);
           if (!re.test(effectiveValue)) {
-            fieldErrors[field.name] = "Invalid format";
+            fieldErrors[field.name] = "Неверный формат";
           }
         } catch {
           // ignore invalid regex in schema
@@ -318,7 +318,7 @@ export async function getCredential(id: string): Promise<CredentialDetails> {
   await delay();
   const credential = credentialStore.find((item) => item.id === id);
   if (!credential) {
-    throw createApiError({ message: "Credential not found", status: 404 });
+    throw createApiError({ message: "Учетные данные не найдены", status: 404 });
   }
   return sanitizeCredential(credential);
 }
@@ -329,20 +329,20 @@ export async function createCredential(
   await delay();
   if (!payload.name.trim()) {
     throw createApiError({
-      message: "Validation failed",
+      message: "Проверка не пройдена",
       status: 422,
-      fieldErrors: { name: "Required" },
+      fieldErrors: { name: "Обязательное поле" },
     });
   }
   const typeDef = getTypeDefinition(payload.type);
   if (!typeDef) {
-    throw createApiError({ message: "Unknown credential type", status: 400 });
+    throw createApiError({ message: "Неизвестный тип учетных данных", status: 400 });
   }
 
   const fieldErrors = validatePayload(typeDef, payload);
   if (Object.keys(fieldErrors).length > 0) {
     throw createApiError({
-      message: "Validation failed",
+      message: "Проверка не пройдена",
       status: 422,
       fieldErrors,
     });
@@ -373,27 +373,27 @@ export async function updateCredential(
   await delay();
   if (!payload.name.trim()) {
     throw createApiError({
-      message: "Validation failed",
+      message: "Проверка не пройдена",
       status: 422,
-      fieldErrors: { name: "Required" },
+      fieldErrors: { name: "Обязательное поле" },
     });
   }
   const index = credentialStore.findIndex((item) => item.id === id);
   if (index === -1) {
-    throw createApiError({ message: "Credential not found", status: 404 });
+    throw createApiError({ message: "Учетные данные не найдены", status: 404 });
   }
 
   const existing = credentialStore[index];
   const typeDef = getTypeDefinition(existing.type);
   if (!typeDef) {
-    throw createApiError({ message: "Unknown credential type", status: 400 });
+    throw createApiError({ message: "Неизвестный тип учетных данных", status: 400 });
   }
 
   const merged = mergeCredentialData(existing, payload);
   const fieldErrors = validatePayload(typeDef, payload, merged.data);
   if (Object.keys(fieldErrors).length > 0) {
     throw createApiError({
-      message: "Validation failed",
+      message: "Проверка не пройдена",
       status: 422,
       fieldErrors,
     });
@@ -425,8 +425,8 @@ export async function testCredential(
   if (!typeDef) {
     return {
       ok: false,
-      message: "Unknown credential type",
-      details: "No schema for this credential type.",
+      message: "Неизвестный тип учетных данных",
+      details: "Нет схемы для этого типа учетных данных.",
     };
   }
 
@@ -434,14 +434,14 @@ export async function testCredential(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       ok: false,
-      message: "Missing required fields",
+      message: "Не заполнены обязательные поля",
       details: Object.values(fieldErrors).join(", "),
     };
   }
 
   return {
     ok: true,
-    message: "Connection succeeded",
-    details: "All required fields are present.",
+    message: "Подключение успешно",
+    details: "Все обязательные поля заполнены.",
   };
 }

@@ -6,6 +6,8 @@ import { BrowserRouter } from "react-router-dom";
 import "../styles/global.css";
 import { ColorModeProvider } from "./ColorModeProvider";
 import { MotionProvider } from "./MotionProvider";
+import { GraphsProvider } from "../../features/graphs/model/graphsStore";
+import { AuthProvider } from "../../features/auth";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -13,7 +15,11 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <StyledEngineProvider enableCssLayer>
         <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
         <MotionProvider>
-          <ColorModeProvider>{children}</ColorModeProvider>
+          <ColorModeProvider>
+            <AuthProvider>
+              <GraphsProvider>{children}</GraphsProvider>
+            </AuthProvider>
+          </ColorModeProvider>
         </MotionProvider>
       </StyledEngineProvider>
     </BrowserRouter>

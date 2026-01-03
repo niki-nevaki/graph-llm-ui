@@ -96,7 +96,7 @@ export function CredentialsListPage() {
       state: {
         type: details.type,
         initialValues: {
-          name: `Copy of ${details.name}`,
+          name: `Копия ${details.name}`,
           data,
           dataMeta,
         },
@@ -115,13 +115,13 @@ export function CredentialsListPage() {
             justifyContent="space-between"
           >
             <Box>
-              <Typography variant="h5">Credentials</Typography>
+              <Typography variant="h5">Учетные данные</Typography>
               <Typography variant="body2" color="text.secondary">
-                Manage connection secrets and tokens.
+                Управляйте секретами и токенами подключений.
               </Typography>
             </Box>
             <Button variant="contained" onClick={handleCreate}>
-              Create credential
+              Создать учетные данные
             </Button>
           </Stack>
 
@@ -131,7 +131,7 @@ export function CredentialsListPage() {
             alignItems={{ xs: "stretch", md: "center" }}
           >
             <TextField
-              placeholder="Search credentials"
+              placeholder="Поиск учетных данных"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               InputProps={{
@@ -144,7 +144,7 @@ export function CredentialsListPage() {
               fullWidth
             />
             <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="credential-type-filter">Type</InputLabel>
+              <InputLabel id="credential-type-filter">Тип</InputLabel>
               <Select
                 labelId="credential-type-filter"
                 multiple
@@ -152,7 +152,7 @@ export function CredentialsListPage() {
                 onChange={(event: SelectChangeEvent<string[]>) =>
                   setTypeFilter(event.target.value as string[])
                 }
-                input={<OutlinedInput label="Type" />}
+                input={<OutlinedInput label="Тип" />}
                 renderValue={(selected) => (
                   <Stack direction="row" spacing={0.5} flexWrap="wrap">
                     {(selected as string[]).map((value) => (
@@ -184,21 +184,21 @@ export function CredentialsListPage() {
             <Alert
               severity="error"
               action={
-                <Button color="inherit" size="small" onClick={reload}>
-                  Retry
-                </Button>
+              <Button color="inherit" size="small" onClick={reload}>
+                  Повторить
+              </Button>
               }
             >
               {error.message}
             </Alert>
           ) : items.length === 0 ? (
             <Stack spacing={1} sx={{ py: 6, alignItems: "center" }}>
-              <Typography variant="h6">No credentials yet</Typography>
+              <Typography variant="h6">Пока нет учетных данных</Typography>
               <Typography variant="body2" color="text.secondary">
-                Create your first credential to connect services.
+                Создайте первые учетные данные для подключения сервисов.
               </Typography>
               <Button variant="contained" onClick={handleCreate}>
-                Create credential
+                Создать учетные данные
               </Button>
             </Stack>
           ) : (

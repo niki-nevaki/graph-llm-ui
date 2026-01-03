@@ -19,7 +19,7 @@ export function useTestCredential() {
       setResult(response);
       setStatus(response.ok ? "success" : "error");
     } catch (err) {
-      setError(isApiError(err) ? err : { message: "Test failed" });
+      setError(isApiError(err) ? err : { message: "Проверка не удалась" });
       setStatus("error");
     }
   }, []);

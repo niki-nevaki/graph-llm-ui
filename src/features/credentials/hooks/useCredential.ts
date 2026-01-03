@@ -20,7 +20,7 @@ export function useCredential(id?: string) {
       const response = await getCredential(id);
       setData(response);
     } catch (err) {
-      setError(isApiError(err) ? err : { message: "Failed to load credential" });
+      setError(isApiError(err) ? err : { message: "Не удалось загрузить учетные данные" });
     } finally {
       setLoading(false);
     }

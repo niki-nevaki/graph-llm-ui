@@ -37,14 +37,14 @@ export function DeleteCredentialDialog({
 
   return (
     <Dialog open={open} onClose={onCancel} maxWidth="xs" fullWidth>
-      <DialogTitle>Delete credential?</DialogTitle>
+      <DialogTitle>Удалить учетные данные?</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            This action cannot be undone. Type the credential name to confirm.
+            Это действие нельзя отменить. Для подтверждения введите название учетных данных.
           </Typography>
           <TextField
-            label="Credential name"
+            label="Название учетных данных"
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
             fullWidth
@@ -53,7 +53,7 @@ export function DeleteCredentialDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel} disabled={loading}>
-          Cancel
+          Отмена
         </Button>
         <Button
           onClick={onConfirm}
@@ -61,7 +61,7 @@ export function DeleteCredentialDialog({
           variant="contained"
           disabled={!canDelete || loading}
         >
-          Delete
+          Удалить
         </Button>
       </DialogActions>
     </Dialog>

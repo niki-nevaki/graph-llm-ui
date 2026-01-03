@@ -88,7 +88,7 @@ export function CredentialsTable({
                 {item.name}
               </Typography>
               <IconButton
-                aria-label="Credential actions"
+                aria-label="Действия учетных данных"
                 onClick={(event) => handleOpenMenu(event, item)}
               >
                 <MoreVertIcon fontSize="small" />
@@ -99,10 +99,10 @@ export function CredentialsTable({
                 label={getTypeLabel?.(item.type) ?? item.type}
                 size="small"
               />
-              {item.shared && <Chip label="Shared" size="small" />}
+              {item.shared && <Chip label="Общий доступ" size="small" />}
             </Stack>
             <Typography variant="caption" color="text.secondary">
-              Updated {new Date(item.updatedAt).toLocaleString()}
+              Обновлено {new Date(item.updatedAt).toLocaleString()}
             </Typography>
           </Paper>
         ))}
@@ -111,9 +111,9 @@ export function CredentialsTable({
           open={Boolean(anchorEl)}
           onClose={handleCloseMenu}
         >
-          <MenuItem onClick={() => handleMenuAction("edit")}>Edit</MenuItem>
-          <MenuItem onClick={() => handleMenuAction("duplicate")}>Duplicate</MenuItem>
-          <MenuItem onClick={() => handleMenuAction("delete")}>Delete</MenuItem>
+          <MenuItem onClick={() => handleMenuAction("edit")}>Изменить</MenuItem>
+          <MenuItem onClick={() => handleMenuAction("duplicate")}>Дублировать</MenuItem>
+          <MenuItem onClick={() => handleMenuAction("delete")}>Удалить</MenuItem>
         </Menu>
       </Stack>
     );
@@ -124,11 +124,11 @@ export function CredentialsTable({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Owner</TableCell>
-            <TableCell>Updated</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell>Название</TableCell>
+            <TableCell>Тип</TableCell>
+            <TableCell>Владелец</TableCell>
+            <TableCell>Обновлено</TableCell>
+            <TableCell align="right">Действия</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -152,7 +152,7 @@ export function CredentialsTable({
               </TableCell>
               <TableCell align="right" onClick={(event) => event.stopPropagation()}>
                 <IconButton
-                  aria-label="Credential actions"
+                  aria-label="Действия учетных данных"
                   onClick={(event) => handleOpenMenu(event, item)}
                   size="small"
                 >
@@ -168,9 +168,9 @@ export function CredentialsTable({
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
       >
-        <MenuItem onClick={() => handleMenuAction("edit")}>Edit</MenuItem>
-        <MenuItem onClick={() => handleMenuAction("duplicate")}>Duplicate</MenuItem>
-        <MenuItem onClick={() => handleMenuAction("delete")}>Delete</MenuItem>
+        <MenuItem onClick={() => handleMenuAction("edit")}>Изменить</MenuItem>
+        <MenuItem onClick={() => handleMenuAction("duplicate")}>Дублировать</MenuItem>
+        <MenuItem onClick={() => handleMenuAction("delete")}>Удалить</MenuItem>
       </Menu>
     </Paper>
   );

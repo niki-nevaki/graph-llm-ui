@@ -41,8 +41,6 @@ import { AppNode } from "./nodes/AppNode";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 import type { ToolOption } from "../model/toolOptions";
 
-const initialEdges: Edge[] = [];
-
 let idCounter = 3;
 const nextId = () => String(idCounter++);
 
@@ -72,20 +70,19 @@ const createDefinitionNode = (id: string, kind: NodeKind): DefinitionNode => {
   }
 };
 
-const initialNodes: Array<Node<DefinitionNode>> = [
-  {
-    id: "1",
-    type: "appNode",
-    position: { x: 160, y: 120 },
-    data: createDefinitionNode("1", "text"),
-  },
-  {
-    id: "2",
-    type: "appNode",
-    position: { x: 520, y: 120 },
-    data: createDefinitionNode("2", "llm"),
-  },
-];
+type GraphEditorProps = {
+  graphId: string;
+  initialDefinition: {
+    nodes: Array<Node<DefinitionNode>>;
+    edges: Edge[];
+    viewport?: { x: number; y: number; zoom: number };
+  };
+  onDefinitionChange?: (definition: {
+    nodes: Array<Node<DefinitionNode>>;
+    edges: Edge[];
+    viewport?: { x: number; y: number; zoom: number };
+  }) => void;
+};
 
 type ToolDraft = {
   agentId: string;
@@ -93,19 +90,23 @@ type ToolDraft = {
   targetHandle: "tool" | "memory";
 };
 
-export function GraphEditor() {
+export function GraphEditor(props: GraphEditorProps) {
   return (
     <ReactFlowProvider>
-      <GraphEditorInner />
+      <GraphEditorInner {...props} />
     </ReactFlowProvider>
   );
 }
 
-function GraphEditorInner() {
+function GraphEditorInner({
+  graphId,
+  initialDefinition,
+  onDefinitionChange,
+}: GraphEditorProps) {
   const reactFlow = useReactFlow();
   const [nodes, setNodes, onNodesChange] =
-    useNodesState<Node<DefinitionNode>>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    useNodesState<Node<DefinitionNode>>(initialDefinition.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialDefinition.edges);
 
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
@@ -117,6 +118,29 @@ function GraphEditorInner() {
   useEffect(() => {
     edgesRef.current = edges;
   }, [edges]);
+
+  useEffect(() => {
+    const numericIds = nodes
+      .map((node) => Number(node.id))
+      .filter((value) => Number.isFinite(value));
+    if (numericIds.length === 0) return;
+    const maxId = Math.max(...numericIds);
+    idCounter = Math.max(idCounter, maxId + 1);
+  }, [nodes]);
+
+  useEffect(() => {
+    if (!onDefinitionChange) return;
+    if (isSyncingRef.current) {
+      isSyncingRef.current = false;
+      return;
+    }
+    const viewport = reactFlow.getViewport();
+    onDefinitionChange({
+      nodes,
+      edges,
+      viewport,
+    });
+  }, [edges, nodes, onDefinitionChange, reactFlow]);
 
   useEffect(() => {
     setNodeStatuses((prev) => {
@@ -165,6 +189,33 @@ function GraphEditorInner() {
   const [nodeRunOrder, setNodeRunOrder] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const reconnectEdgeIdRef = useRef<string | null>(null);
+  const activeGraphIdRef = useRef(graphId);
+  const isSyncingRef = useRef(false);
+
+  useEffect(() => {
+    if (activeGraphIdRef.current === graphId) return;
+    activeGraphIdRef.current = graphId;
+    isSyncingRef.current = true;
+    setNodes(initialDefinition.nodes);
+    setEdges(initialDefinition.edges);
+    setSelectedNodeId(null);
+    setFocusFieldPath(null);
+    setInspectorTabId("general");
+    setIssues([]);
+    setGraphStatus("idle");
+    setNodeStatuses({});
+    setExecution(null);
+    setNodeRuns({});
+    setNodeRunOrder([]);
+    if (!onDefinitionChange) {
+      isSyncingRef.current = false;
+    }
+    if (initialDefinition.viewport) {
+      requestAnimationFrame(() => {
+        reactFlow.setViewport(initialDefinition.viewport ?? { x: 0, y: 0, zoom: 1 }, { duration: 0 });
+      });
+    }
+  }, [graphId, initialDefinition, reactFlow, setEdges, setNodes]);
 
   const isValidConnection = useCallback(
     (connection: Connection) => {
@@ -320,6 +371,18 @@ function GraphEditorInner() {
       setInspectorOpen(true);
     },
     [setNodes]
+  );
+
+  const onViewportChangeEnd = useCallback(
+    (viewport: { x: number; y: number; zoom: number }) => {
+      if (!onDefinitionChange) return;
+      onDefinitionChange({
+        nodes: nodesRef.current,
+        edges: edgesRef.current,
+        viewport,
+      });
+    },
+    [onDefinitionChange]
   );
 
   const requestToolDraft = useCallback(
@@ -830,6 +893,8 @@ function GraphEditorInner() {
               setSelectedNodeId(null);
               setFocusFieldPath(null);
             }}
+            defaultViewport={initialDefinition.viewport}
+            onViewportChangeEnd={onViewportChangeEnd}
             canvasActions={
               <GraphCanvasActions
                 hasNodes={nodes.length > 0}

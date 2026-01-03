@@ -33,17 +33,17 @@ export function TestCredentialPanel({
           onClick={handleTest}
           disabled={disabled || status === "running"}
         >
-          Test connection
+          Проверить соединение
         </Button>
         {status === "running" && <CircularProgress size={18} />}
         {status === "success" && (
           <Typography variant="body2" color="success.main">
-            Success
+            Успешно
           </Typography>
         )}
         {status === "error" && (
           <Typography variant="body2" color="error.main">
-            Failed
+            Ошибка
           </Typography>
         )}
       </Box>

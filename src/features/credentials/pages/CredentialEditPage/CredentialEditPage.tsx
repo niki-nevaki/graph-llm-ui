@@ -78,7 +78,7 @@ export function CredentialEditPage() {
             severity="error"
             action={
               <Button color="inherit" size="small" onClick={reload}>
-                Retry
+                Повторить
               </Button>
             }
           >
@@ -97,7 +97,7 @@ export function CredentialEditPage() {
           />
         )}
         {!loading && data && !typeDefinition && (
-          <Alert severity="error">Unknown credential type.</Alert>
+          <Alert severity="error">Неизвестный тип учетных данных.</Alert>
         )}
       </Box>
 

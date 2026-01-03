@@ -58,6 +58,7 @@ type Props = {
   onNodeClick: (event: React.MouseEvent, node: Node<DefinitionNode>) => void;
   onPaneClick: () => void;
   defaultViewport?: Viewport;
+  onViewportChangeEnd?: (viewport: Viewport) => void;
   canvasActions?: React.ReactNode;
 };
 
@@ -79,6 +80,7 @@ export function FlowCanvas({
   onNodeClick,
   onPaneClick,
   defaultViewport,
+  onViewportChangeEnd,
   canvasActions,
 }: Props) {
   const { screenToFlowPosition } = useReactFlow();
@@ -169,9 +171,10 @@ export function FlowCanvas({
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}
         isValidConnection={isValidConnection}
-        fitView
+        fitView={!defaultViewport}
         defaultViewport={defaultViewport}
         defaultEdgeOptions={defaultEdgeOptions}
+        onMoveEnd={(_, viewport) => onViewportChangeEnd?.(viewport)}
       >
         <Background />
         <Controls />

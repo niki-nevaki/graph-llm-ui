@@ -21,7 +21,7 @@ export function useCredentialsList(params: ListCredentialsParams) {
       setItems(response.items);
       setTotal(response.total);
     } catch (err) {
-      setError(isApiError(err) ? err : { message: "Failed to load list" });
+      setError(isApiError(err) ? err : { message: "Не удалось загрузить список" });
     } finally {
       setLoading(false);
     }

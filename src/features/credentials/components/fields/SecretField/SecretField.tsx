@@ -73,7 +73,7 @@ export function SecretField({
             fullWidth
             type="password"
             value={state.isSet ? "••••••••" : ""}
-            placeholder={state.isSet ? "Saved" : "Not set"}
+            placeholder={state.isSet ? "Сохранено" : "Не задано"}
             disabled
             error={error}
             helperText={helperText}
@@ -88,7 +88,7 @@ export function SecretField({
               })
             }
           >
-            Replace
+            Заменить
           </Button>
           {state.isSet && (
             <Button
@@ -103,7 +103,7 @@ export function SecretField({
                 })
               }
             >
-              Clear
+              Очистить
             </Button>
           )}
         </Box>
@@ -124,11 +124,11 @@ export function SecretField({
             helperText={helperText}
           />
           <Button variant="outlined" onClick={() => setReveal((prev) => !prev)}>
-            {reveal ? "Hide" : "Reveal"}
+            {reveal ? "Скрыть" : "Показать"}
           </Button>
           {canCopy && (
-            <Tooltip title="Copy">
-              <IconButton onClick={handleCopy} aria-label="Copy secret">
+            <Tooltip title="Копировать">
+              <IconButton onClick={handleCopy} aria-label="Копировать секрет">
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -145,7 +145,7 @@ export function SecretField({
                 })
               }
             >
-              Cancel
+              Отмена
             </Button>
           )}
         </Box>
