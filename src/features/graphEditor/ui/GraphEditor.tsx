@@ -86,6 +86,7 @@ const initialNodes: Array<Node<DefinitionNode>> = [
 type ToolDraft = {
   agentId: string;
   position: { x: number; y: number };
+  targetHandle: "tool" | "memory";
 };
 
 export function GraphEditor() {
@@ -223,14 +224,15 @@ function GraphEditorInner() {
     [setNodes]
   );
 
-  const requestToolDraft = useCallback((agentId: string) => {
+  const requestToolDraft = useCallback(
+    (agentId: string, targetHandle: "tool" | "memory" = "tool") => {
     const currentNodes = nodesRef.current;
     const currentEdges = edgesRef.current;
     const agentNode = currentNodes.find((node) => node.id === agentId);
     if (!agentNode) return;
 
     const toolIndex = currentEdges.filter(
-      (edge) => edge.target === agentId && edge.targetHandle === "tool"
+      (edge) => edge.target === agentId && edge.targetHandle === targetHandle
     ).length;
 
     const draft: ToolDraft = {
@@ -239,12 +241,15 @@ function GraphEditorInner() {
         x: agentNode.position.x,
         y: agentNode.position.y + 220 + toolIndex * 140,
       },
+      targetHandle,
     };
 
     setToolDraft(draft);
     setSelectedNodeId(null);
     setInspectorOpen(true);
-  }, []);
+  },
+    []
+  );
 
   const confirmToolSelection = useCallback(
     (option: ToolOption) => {
@@ -252,7 +257,7 @@ function GraphEditorInner() {
         if (!draft) return draft;
 
         const nodeId = nextId();
-        const edgeId = `edge-${nodeId}-${draft.agentId}`;
+        const edgeId = `edge-${nodeId}-${draft.agentId}-${draft.targetHandle}`;
 
         const toolConfig = {
           ...createDefaultNodeConfig("tool"),
@@ -300,7 +305,7 @@ function GraphEditorInner() {
               source: nodeId,
               sourceHandle: "out",
               target: draft.agentId,
-              targetHandle: "tool",
+              targetHandle: draft.targetHandle,
               type: "custom",
             },
             eds

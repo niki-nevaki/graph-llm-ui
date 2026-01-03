@@ -9,19 +9,36 @@ import { NODE_SPECS } from "./nodeSpecs";
 type HandleShape = "circle" | "diamond";
 
 const handleStyle: React.CSSProperties = {
-  width: 16,
-  height: 16,
+  width: 22,
+  height: 22,
   borderRadius: 999,
-  border: "1px solid rgba(0,0,0,0.25)",
-  background: "#fff",
+  border: "none",
+  background: "transparent",
   zIndex: 10,
 };
 
-const buildHandleStyle = (offsetPercent: number, shape: HandleShape = "circle") => ({
+const buildLeftHandleStyle = (
+  offsetPercent: number,
+  shape: HandleShape = "circle"
+) => ({
   ...handleStyle,
   top: `${offsetPercent}%`,
-  borderRadius: shape === "diamond" ? 2 : 999,
-  transform: shape === "diamond" ? "rotate(45deg)" : undefined,
+  transform:
+    shape === "diamond"
+      ? "translate(-50%, -50%) rotate(45deg)"
+      : "translate(-50%, -50%)",
+});
+
+const buildRightHandleStyle = (
+  offsetPercent: number,
+  shape: HandleShape = "circle"
+) => ({
+  ...handleStyle,
+  top: `${offsetPercent}%`,
+  transform:
+    shape === "diamond"
+      ? "translate(50%, -50%) rotate(45deg)"
+      : "translate(50%, -50%)",
 });
 
 const buildBottomHandleStyle = (
@@ -30,9 +47,10 @@ const buildBottomHandleStyle = (
 ) => ({
   ...handleStyle,
   left: `${offsetPercent}%`,
-  borderRadius: shape === "diamond" ? 2 : 999,
   transform:
-    shape === "diamond" ? "translateX(-50%) rotate(45deg)" : "translateX(-50%)",
+    shape === "diamond"
+      ? "translate(-50%, 50%) rotate(45deg)"
+      : "translate(-50%, 50%)",
 });
 
 const TOOL_LABEL_OFFSET = 6;
@@ -52,9 +70,14 @@ const TEXT_ICON_BOX = 34;
 const TEXT_ICON_SIZE = 28;
 const AGENT_TOOL_OFFSET = 35;
 const AGENT_MEMORY_OFFSET = 65;
+const NODE_LABEL_OFFSET = 8;
+const NODE_LABEL_FONT_SIZE = 14;
+const NODE_LABEL_COLOR = "#fff";
+const AI_LEFT_PADDING = 34;
+const AI_RIGHT_PADDING = 16;
 
 type AppNodeProps = NodeProps<DefinitionNode> & {
-  onRequestToolDraft?: (agentId: string) => void;
+  onRequestToolDraft?: (agentId: string, targetHandle?: "tool" | "memory") => void;
 };
 
 export const AppNode = memo(function AppNode(props: AppNodeProps) {
@@ -64,6 +87,7 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
   const isToolNode = data.kind === "tool";
   const isTextNode = data.kind === "text";
   const isAgentNode = data.kind === "agent";
+  const isAiNode = data.kind === "agent" || data.kind === "llm";
   const { nodeStatuses, nodeIssues } = useGraphRuntime();
   const runtimeStatus = nodeStatuses[props.id];
   const issues = nodeIssues[props.id] ?? [];
@@ -104,7 +128,16 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
     (event: React.MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      props.onRequestToolDraft?.(props.id);
+      props.onRequestToolDraft?.(props.id, "tool");
+    },
+    [props.id, props.onRequestToolDraft]
+  );
+
+  const onAddMemory = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      props.onRequestToolDraft?.(props.id, "memory");
     },
     [props.id, props.onRequestToolDraft]
   );
@@ -149,19 +182,43 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
             !
           </Box>
         ) : null}
+        {!isAiNode ? (
+          <Typography
+            variant="caption"
+            sx={{
+              position: "absolute",
+              left: "50%",
+              top: "100%",
+              transform: `translate(-50%, ${NODE_LABEL_OFFSET}px)`,
+              fontSize: NODE_LABEL_FONT_SIZE,
+              letterSpacing: 0.2,
+              color: NODE_LABEL_COLOR,
+              userSelect: "none",
+              textAlign: "center",
+              minWidth: 120,
+              maxWidth: 160,
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+            }}
+          >
+            {data.name}
+          </Typography>
+        ) : null}
         <Icon sx={{ fontSize: TOOL_ICON_SIZE }} />
 
         <Handle
           type="target"
           position={Position.Left}
           id="in"
-          style={buildHandleStyle(50)}
+          className="node-handle"
+          style={buildLeftHandleStyle(50)}
         />
         <Handle
           type="source"
           position={Position.Right}
           id="out"
-          style={buildHandleStyle(50)}
+          className="node-handle"
+          style={buildRightHandleStyle(50)}
         />
       </Paper>
     );
@@ -216,17 +273,19 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          p: 2,
+          p: isAiNode ? 0 : 2,
         }}
       >
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: isTextNode ? "center" : "space-between",
-            gap: isTextNode ? 0 : 1.5,
+            justifyContent: "center",
+            gap: isAiNode ? 1.5 : 0,
             minWidth: 0,
             width: "100%",
+            pl: isAiNode ? `${AI_LEFT_PADDING}px` : 0,
+            pr: isAiNode ? `${AI_RIGHT_PADDING}px` : 0,
           }}
         >
           <Box
@@ -243,14 +302,14 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
             <Icon sx={{ fontSize: iconSize }} />
           </Box>
 
-          {!isTextNode ? (
+          {isAiNode ? (
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: MAIN_TEXT_SIZE,
                 lineHeight: 1.2,
                 fontWeight: 400,
-                textAlign: "right",
+                textAlign: "center",
                 whiteSpace: "normal",
                 wordBreak: "break-word",
                 flex: 1,
@@ -276,6 +335,28 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
             borderColor: "divider",
           }}
         />
+      ) : null}
+      {!isAiNode ? (
+        <Typography
+          variant="caption"
+          sx={{
+            position: "absolute",
+            left: "50%",
+            top: "100%",
+            transform: `translate(-50%, ${NODE_LABEL_OFFSET}px)`,
+            fontSize: NODE_LABEL_FONT_SIZE,
+            letterSpacing: 0.2,
+            color: NODE_LABEL_COLOR,
+            userSelect: "none",
+            textAlign: "center",
+            minWidth: 120,
+            maxWidth: 180,
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+          }}
+        >
+          {data.name}
+        </Typography>
       ) : null}
 
       {isAgentNode && spec.toolHandle ? (
@@ -321,6 +402,17 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
               bgcolor: "divider",
             }}
           />
+          <Box
+            sx={{
+              position: "absolute",
+              left: `${AGENT_MEMORY_OFFSET}%`,
+              top: "100%",
+              transform: `translate(-50%, ${TOOL_LINE_OFFSET}px)`,
+              width: 2,
+              height: TOOL_LINE_LENGTH,
+              bgcolor: "divider",
+            }}
+          />
           <IconButton
             aria-label="Добавить инструмент"
             onClick={onAddTool}
@@ -355,6 +447,40 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
           >
             <AddIcon fontSize="inherit" />
           </IconButton>
+          <IconButton
+            aria-label="Добавить память"
+            onClick={onAddMemory}
+            onMouseDown={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+            className="nodrag nopan"
+            size="small"
+            sx={{
+              position: "absolute",
+              left: `${AGENT_MEMORY_OFFSET}%`,
+              top: "100%",
+              transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(1)`,
+              transformOrigin: "center",
+              width: 22,
+              height: 22,
+              border: "1px solid",
+              borderColor: "error.main",
+              bgcolor: "background.paper",
+              color: "error.main",
+              boxShadow: 1,
+              borderRadius: 0,
+              pointerEvents: "all",
+              zIndex: 5,
+              "&:hover": {
+                bgcolor: "action.hover",
+                transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(var(--motion-scale-hover))`,
+              },
+              "&:active": {
+                transform: `translate(-50%, ${TOOL_PLUS_OFFSET}px) scale(var(--motion-scale-press))`,
+              },
+            }}
+          >
+            <AddIcon fontSize="inherit" />
+          </IconButton>
         </>
       ) : null}
 
@@ -363,13 +489,15 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
         type="target"
         position={Position.Left}
         id="in"
-        style={buildHandleStyle(50)}
+        className="node-handle"
+        style={buildLeftHandleStyle(50)}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="out"
-        style={buildHandleStyle(50)}
+        className="node-handle"
+        style={buildRightHandleStyle(50)}
       />
       {isAgentNode ? (
         <>
@@ -377,12 +505,14 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
             type="target"
             position={Position.Bottom}
             id="tool"
+            className="node-handle node-handle--diamond"
             style={buildBottomHandleStyle(AGENT_TOOL_OFFSET, "diamond")}
           />
           <Handle
             type="target"
             position={Position.Bottom}
             id="memory"
+            className="node-handle node-handle--diamond"
             style={buildBottomHandleStyle(AGENT_MEMORY_OFFSET, "diamond")}
           />
         </>
@@ -391,6 +521,7 @@ export const AppNode = memo(function AppNode(props: AppNodeProps) {
           type="target"
           position={spec.toolHandle.position}
           id="tool"
+          className="node-handle"
           style={buildBottomHandleStyle(spec.toolHandle.offsetPercent)}
         />
       ) : null}
