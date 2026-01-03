@@ -33,6 +33,8 @@ import { IssuesPanel } from "./IssuesPanel";
 import { NodeInspector } from "./NodeInspector";
 import { NodePalette } from "./NodePalette";
 import { CustomEdge } from "./edges/CustomEdge";
+import { buildGraphExportPayload } from "../model/graphExport";
+import { saveGraph } from "../../../api/graphs/graphsApi";
 import { AppNode } from "./nodes/AppNode";
 import { NODE_SPECS } from "./nodes/nodeSpecs";
 import type { ToolOption } from "../model/toolOptions";
@@ -206,6 +208,28 @@ function GraphEditorInner() {
   const onReconnectEnd = useCallback(() => {
     reconnectEdgeIdRef.current = null;
   }, []);
+
+  const onExport = useCallback(async () => {
+    const viewport = reactFlow.getViewport();
+    const payload = buildGraphExportPayload({
+      nodes: nodesRef.current,
+      edges: edgesRef.current,
+      viewport,
+      selectedNodeId,
+      inspectorOpen,
+      inspectorWidth,
+      issuesOpen,
+      showFieldIssues,
+    });
+    await saveGraph(payload);
+  }, [
+    inspectorOpen,
+    inspectorWidth,
+    issuesOpen,
+    reactFlow,
+    selectedNodeId,
+    showFieldIssues,
+  ]);
 
   const onCreateNode = useCallback(
     (kind: NodeKind, position: { x: number; y: number }) => {
@@ -606,6 +630,7 @@ function GraphEditorInner() {
                 onExecute={onExecute}
                 onValidate={onValidate}
                 onStop={onStop}
+                onExport={onExport}
                 onToggleShowFieldIssues={() =>
                   setShowFieldIssues((prev) => !prev)
                 }

@@ -1,5 +1,6 @@
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import StopIcon from "@mui/icons-material/Stop";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { IconButton, Paper, Stack, Tooltip } from "@mui/material";
@@ -12,6 +13,7 @@ type Props = {
   onExecute: () => void;
   onValidate: () => void;
   onStop: () => void;
+  onExport: () => void;
   onToggleShowFieldIssues: () => void;
 };
 
@@ -22,6 +24,7 @@ export function GraphCanvasActions({
   onExecute,
   onValidate,
   onStop,
+  onExport,
   onToggleShowFieldIssues,
 }: Props) {
   return (
@@ -79,6 +82,11 @@ export function GraphCanvasActions({
               onClick={onToggleShowFieldIssues}
             >
               <VisibilityIcon fontSize="medium" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Сохранить">
+            <IconButton size="medium" color="default" onClick={onExport}>
+              <SaveOutlinedIcon fontSize="medium" />
             </IconButton>
           </Tooltip>
           {isRunning ? (
