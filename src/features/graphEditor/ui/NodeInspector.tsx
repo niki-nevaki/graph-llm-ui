@@ -25,6 +25,7 @@ import type {
   TgBotDefinitionNode,
   ToolDefinitionNode,
 } from "../../../domain/workflow";
+import type { Issue } from "../model/runtime";
 
 import { AgentNodeSettingsForm } from "./forms/AgentNodeSettingsForm";
 import { LlmNodeSettingsForm } from "./forms/LlmNodeSettingsForm";
@@ -43,6 +44,8 @@ type Props = {
 
   selectedNode: { id: string; data: DefinitionNode } | null;
   focusFieldPath?: string | null;
+  fieldIssueMap?: Record<string, Issue>;
+  showFieldIssues?: boolean;
   toolDraft?: {
     onSelect: (option: ToolOption) => void;
     onCancel: () => void;
@@ -79,6 +82,8 @@ export function NodeInspector({
 
   selectedNode,
   focusFieldPath,
+  fieldIssueMap = {},
+  showFieldIssues = false,
   toolDraft,
 
   onClose,
@@ -98,6 +103,14 @@ export function NodeInspector({
       setTab(0);
     }
   }, [focusFieldPath]);
+
+  const getIssueForField = useCallback(
+    (fieldPath: string) => {
+      if (!selectedNode) return undefined;
+      return fieldIssueMap[`${selectedNode.id}:${fieldPath}`];
+    },
+    [fieldIssueMap, selectedNode]
+  );
 
   useEffect(() => {
     if (!focusFieldPath || !open || !selectedNode) return;
@@ -407,6 +420,9 @@ export function NodeInspector({
                       <SettingsForm
                         data={data}
                         updateConfig={updateConfig}
+                        getIssue={getIssueForField}
+                        focusFieldPath={focusFieldPath ?? null}
+                        showFieldIssues={showFieldIssues}
                       />
                     </Box>
                   </Stack>
@@ -441,8 +457,11 @@ export function NodeInspector({
 function SettingsForm(props: {
   data: DefinitionNode;
   updateConfig: (patch: Partial<DefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, updateConfig } = props;
+  const { data, updateConfig, getIssue, focusFieldPath, showFieldIssues } = props;
 
   switch (data.kind) {
     case "text":
@@ -450,6 +469,9 @@ function SettingsForm(props: {
         <TextNodeSettingsForm
           data={data as TextDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
     case "tgBot":
@@ -457,6 +479,9 @@ function SettingsForm(props: {
         <TgBotNodeSettingsForm
           data={data as TgBotDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
     case "relDb":
@@ -464,6 +489,9 @@ function SettingsForm(props: {
         <RelDbNodeSettingsForm
           data={data as RelDbDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
     case "llm":
@@ -471,6 +499,9 @@ function SettingsForm(props: {
         <LlmNodeSettingsForm
           data={data as LlmDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
     case "agent":
@@ -478,6 +509,9 @@ function SettingsForm(props: {
         <AgentNodeSettingsForm
           data={data as AgentDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
     case "tool":
@@ -485,6 +519,9 @@ function SettingsForm(props: {
         <ToolNodeSettingsForm
           data={data as ToolDefinitionNode}
           onChange={updateConfig}
+          getIssue={getIssue}
+          focusFieldPath={focusFieldPath}
+          showFieldIssues={showFieldIssues}
         />
       );
   }

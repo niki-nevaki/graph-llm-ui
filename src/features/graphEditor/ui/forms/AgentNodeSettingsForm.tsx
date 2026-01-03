@@ -11,12 +11,34 @@ import {
 } from "@mui/material";
 import type { AgentDefinitionNode } from "../../../../domain/workflow";
 import { AGENT_MODEL_OPTIONS } from "../../model/modelOptions";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "./fieldIssueUtils";
+import type { Issue } from "../../model/runtime";
 
 export function AgentNodeSettingsForm(props: {
   data: AgentDefinitionNode;
   onChange: (patch: Partial<AgentDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
+  const modelIssue = resolveFieldIssue(
+    getIssue("config.model"),
+    "config.model",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const promptIssue = resolveFieldIssue(
+    getIssue("config.system_prompt"),
+    "config.system_prompt",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   return (
     <Stack spacing={1.25}>
@@ -49,6 +71,18 @@ export function AgentNodeSettingsForm(props: {
               ...params.inputProps,
               "data-field-path": "config.model",
             }}
+            error={modelIssue.isError}
+            helperText={buildHelperText(modelIssue)}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {buildFieldAdornment(modelIssue)}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+            sx={buildWarningSx(modelIssue)}
           />
         )}
       />
@@ -72,6 +106,12 @@ export function AgentNodeSettingsForm(props: {
         value={data.config.system_prompt}
         onChange={(e) => onChange({ system_prompt: e.target.value })}
         inputProps={{ "data-field-path": "config.system_prompt" }}
+        error={promptIssue.isError}
+        helperText={buildHelperText(promptIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(promptIssue),
+        }}
+        sx={buildWarningSx(promptIssue)}
       />
 
       <FormControlLabel

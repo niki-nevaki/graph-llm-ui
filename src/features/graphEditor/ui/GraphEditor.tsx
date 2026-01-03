@@ -145,6 +145,7 @@ function GraphEditorInner() {
   const [graphStatus, setGraphStatus] = useState<GraphRunState>("idle");
   const [issues, setIssues] = useState<Issue[]>([]);
   const [issuesOpen, setIssuesOpen] = useState(false);
+  const [showFieldIssues, setShowFieldIssues] = useState(false);
   const [nodeStatuses, setNodeStatuses] = useState<
     Record<string, NodeRunStatus>
   >({});
@@ -340,6 +341,7 @@ function GraphEditorInner() {
     );
     setIssues(result.issues);
     setIssuesOpen(result.issues.length > 0);
+    setShowFieldIssues(true);
     if (result.errors.length > 0) {
       setGraphStatus("failed_compile");
     } else {
@@ -436,6 +438,23 @@ function GraphEditorInner() {
         map[issue.nodeId] = [];
       }
       map[issue.nodeId].push(issue);
+    });
+    return map;
+  }, [issues]);
+
+  const fieldIssueMap = useMemo(() => {
+    const map: Record<string, Issue> = {};
+    issues.forEach((issue) => {
+      if (!issue.nodeId || !issue.fieldPath) return;
+      const key = `${issue.nodeId}:${issue.fieldPath}`;
+      const existing = map[key];
+      if (!existing) {
+        map[key] = issue;
+        return;
+      }
+      if (existing.severity !== "error" && issue.severity === "error") {
+        map[key] = issue;
+      }
     });
     return map;
   }, [issues]);
@@ -542,14 +561,17 @@ function GraphEditorInner() {
       >
         <GraphToolbar
           status={graphStatus}
+          hasNodes={nodes.length > 0}
           errorsCount={errorsCount}
           warningsCount={warningsCount}
-          missingRequired={missingRequired}
-          issuesOpen={issuesOpen}
+          showFieldIssues={showFieldIssues}
           onExecute={onExecute}
           onValidate={onValidate}
           onStop={onStop}
           onToggleIssues={() => setIssuesOpen((prev) => !prev)}
+          onToggleShowFieldIssues={() =>
+            setShowFieldIssues((prev) => !prev)
+          }
         />
 
         <Box
@@ -592,6 +614,8 @@ function GraphEditorInner() {
             width={inspectorWidth}
             selectedNode={selectedNode}
             focusFieldPath={focusFieldPath}
+            fieldIssueMap={fieldIssueMap}
+            showFieldIssues={showFieldIssues}
             toolDraft={toolDraftActions}
             onClose={() => {
               if (toolDraft) {
@@ -607,8 +631,16 @@ function GraphEditorInner() {
 
         <IssuesPanel
           open={issuesOpen}
+          status={graphStatus}
           issues={issues}
-          onClose={() => setIssuesOpen(false)}
+          errorsCount={errorsCount}
+          warningsCount={warningsCount}
+          missingRequired={missingRequired}
+          selectedNodeId={selectedNodeId}
+          nodes={nodes}
+          edges={edges}
+          onToggleOpen={() => setIssuesOpen((prev) => !prev)}
+          onStop={onStop}
           onSelectIssue={onSelectIssue}
         />
       </Box>

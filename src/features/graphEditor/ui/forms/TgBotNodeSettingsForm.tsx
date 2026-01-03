@@ -7,12 +7,34 @@ import {
   TextField,
 } from "@mui/material";
 import type { TgBotDefinitionNode } from "../../../../domain/workflow";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "./fieldIssueUtils";
+import type { Issue } from "../../model/runtime";
 
 export function TgBotNodeSettingsForm(props: {
   data: TgBotDefinitionNode;
   onChange: (patch: Partial<TgBotDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
+  const tokenIssue = resolveFieldIssue(
+    getIssue("config.token"),
+    "config.token",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const chatIssue = resolveFieldIssue(
+    getIssue("config.chatId"),
+    "config.chatId",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   return (
     <Stack spacing={1.25}>
@@ -37,6 +59,12 @@ export function TgBotNodeSettingsForm(props: {
         value={data.config.token}
         onChange={(e) => onChange({ token: e.target.value })}
         inputProps={{ "data-field-path": "config.token" }}
+        error={tokenIssue.isError}
+        helperText={buildHelperText(tokenIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(tokenIssue),
+        }}
+        sx={buildWarningSx(tokenIssue)}
       />
 
       <TextField
@@ -46,6 +74,12 @@ export function TgBotNodeSettingsForm(props: {
         value={data.config.chatId}
         onChange={(e) => onChange({ chatId: e.target.value })}
         inputProps={{ "data-field-path": "config.chatId" }}
+        error={chatIssue.isError}
+        helperText={buildHelperText(chatIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(chatIssue),
+        }}
+        sx={buildWarningSx(chatIssue)}
       />
 
       <FormControl size="medium" fullWidth>

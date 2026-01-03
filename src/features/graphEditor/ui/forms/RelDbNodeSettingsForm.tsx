@@ -7,12 +7,40 @@ import {
   TextField,
 } from "@mui/material";
 import type { RelDbDefinitionNode } from "../../../../domain/workflow";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "./fieldIssueUtils";
+import type { Issue } from "../../model/runtime";
 
 export function RelDbNodeSettingsForm(props: {
   data: RelDbDefinitionNode;
   onChange: (patch: Partial<RelDbDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
+  const hostIssue = resolveFieldIssue(
+    getIssue("config.host"),
+    "config.host",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const dbIssue = resolveFieldIssue(
+    getIssue("config.database"),
+    "config.database",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const tableIssue = resolveFieldIssue(
+    getIssue("config.table"),
+    "config.table",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   return (
     <Stack spacing={1.25}>
@@ -39,6 +67,12 @@ export function RelDbNodeSettingsForm(props: {
           onChange={(e) => onChange({ host: e.target.value })}
           disabled={data.config.driver === "sqlite"}
           inputProps={{ "data-field-path": "config.host" }}
+          error={hostIssue.isError}
+          helperText={buildHelperText(hostIssue)}
+          InputProps={{
+            endAdornment: buildFieldAdornment(hostIssue),
+          }}
+          sx={buildWarningSx(hostIssue)}
         />
         <TextField
           label="Порт"
@@ -59,6 +93,12 @@ export function RelDbNodeSettingsForm(props: {
         onChange={(e) => onChange({ database: e.target.value })}
         disabled={data.config.driver === "sqlite"}
         inputProps={{ "data-field-path": "config.database" }}
+        error={dbIssue.isError}
+        helperText={buildHelperText(dbIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(dbIssue),
+        }}
+        sx={buildWarningSx(dbIssue)}
       />
 
       <Stack direction="row" spacing={1}>
@@ -105,6 +145,12 @@ export function RelDbNodeSettingsForm(props: {
           onChange={(e) => onChange({ table: e.target.value })}
           placeholder="public.my_table"
           inputProps={{ "data-field-path": "config.table" }}
+          error={tableIssue.isError}
+          helperText={buildHelperText(tableIssue)}
+          InputProps={{
+            endAdornment: buildFieldAdornment(tableIssue),
+          }}
+          sx={buildWarningSx(tableIssue)}
         />
       ) : null}
     </Stack>

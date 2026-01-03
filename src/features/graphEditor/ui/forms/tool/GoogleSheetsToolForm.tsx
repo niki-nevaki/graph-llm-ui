@@ -5,6 +5,7 @@ import {
   Button,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   IconButton,
   InputLabel,
   MenuItem,
@@ -23,6 +24,13 @@ import {
   type GoogleSheetsToolConfig,
   type ToolDefinitionNode,
 } from "../../../../../domain/workflow";
+import type { Issue } from "../../../model/runtime";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "../fieldIssueUtils";
 
 const RESOURCE_OPTIONS = [
   { value: "document", label: "Документ" },
@@ -161,6 +169,7 @@ function FieldValueInput(props: {
   placeholder?: string;
   inputType?: string;
   dataFieldPath?: string;
+  issueState?: ReturnType<typeof resolveFieldIssue>;
 }) {
   const {
     label,
@@ -171,6 +180,7 @@ function FieldValueInput(props: {
     placeholder,
     inputType,
     dataFieldPath,
+    issueState,
   } = props;
   const normalized = normalizeFieldValue(value);
 
@@ -239,6 +249,12 @@ function FieldValueInput(props: {
             inputProps={
               dataFieldPath ? { "data-field-path": dataFieldPath } : undefined
             }
+            error={issueState?.isError}
+            helperText={issueState ? buildHelperText(issueState) : undefined}
+            InputProps={{
+              endAdornment: issueState ? buildFieldAdornment(issueState) : undefined,
+            }}
+            sx={issueState ? buildWarningSx(issueState) : undefined}
           />
         ) : null}
       </Stack>
@@ -440,8 +456,11 @@ function mergeGoogleSheetsConfig(
 export function GoogleSheetsToolForm(props: {
   data: ToolDefinitionNode;
   onChange: (patch: Partial<ToolDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
   const config = useMemo(
     () => mergeGoogleSheetsConfig(data.config.googleSheets),
     [data.config.googleSheets]
@@ -672,6 +691,49 @@ export function GoogleSheetsToolForm(props: {
 
   const showSheetSelectors =
     config.resource === "sheet" && config.operation !== "createSheet";
+
+  const resourceIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.resource"),
+    "config.googleSheets.resource",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const operationIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.operation"),
+    "config.googleSheets.operation",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const documentUrlIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.selectors.documentUrl"),
+    "config.googleSheets.selectors.documentUrl",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const documentIdIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.selectors.spreadsheetId"),
+    "config.googleSheets.selectors.spreadsheetId",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const sheetUrlIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.selectors.sheetUrl"),
+    "config.googleSheets.selectors.sheetUrl",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const sheetIdIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.selectors.sheetId"),
+    "config.googleSheets.selectors.sheetId",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const sheetNameIssue = resolveFieldIssue(
+    getIssue("config.googleSheets.selectors.sheetName"),
+    "config.googleSheets.selectors.sheetName",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   const applyDocumentIdFromUrl = () => {
     const url = normalizeFieldValue(config.selectors.documentUrl).value ?? "";
@@ -1600,7 +1662,7 @@ export function GoogleSheetsToolForm(props: {
       </Stack>
 
       <Typography variant="subtitle2">Ресурс</Typography>
-      <FormControl size="small" fullWidth>
+      <FormControl size="small" fullWidth error={resourceIssue.isError}>
         <InputLabel>Тип</InputLabel>
         <Select
           label="Тип"
@@ -1617,6 +1679,7 @@ export function GoogleSheetsToolForm(props: {
             });
           }}
           inputProps={{ "data-field-path": "config.googleSheets.resource" }}
+          sx={buildWarningSx(resourceIssue)}
         >
           {RESOURCE_OPTIONS.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -1624,10 +1687,13 @@ export function GoogleSheetsToolForm(props: {
             </MenuItem>
           ))}
         </Select>
+        {resourceIssue.show ? (
+          <FormHelperText>{buildHelperText(resourceIssue)}</FormHelperText>
+        ) : null}
       </FormControl>
 
       <Typography variant="subtitle2">Операция</Typography>
-      <FormControl size="small" fullWidth>
+      <FormControl size="small" fullWidth error={operationIssue.isError}>
         <InputLabel>Операция</InputLabel>
         <Select
           label="Операция"
@@ -1639,6 +1705,7 @@ export function GoogleSheetsToolForm(props: {
             })
           }
           inputProps={{ "data-field-path": "config.googleSheets.operation" }}
+          sx={buildWarningSx(operationIssue)}
         >
           {operationOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -1646,6 +1713,9 @@ export function GoogleSheetsToolForm(props: {
             </MenuItem>
           ))}
         </Select>
+        {operationIssue.show ? (
+          <FormHelperText>{buildHelperText(operationIssue)}</FormHelperText>
+        ) : null}
       </FormControl>
 
       <Typography variant="subtitle2">Документ</Typography>
@@ -1677,6 +1747,7 @@ export function GoogleSheetsToolForm(props: {
               onChange={(value) => updateSelectors({ documentUrl: value })}
               placeholder="https://docs.google.com/spreadsheets/d/..."
               dataFieldPath="config.googleSheets.selectors.documentUrl"
+              issueState={documentUrlIssue}
             />
             <Button variant="outlined" onClick={applyDocumentIdFromUrl}>
               Извлечь ID из URL
@@ -1690,6 +1761,7 @@ export function GoogleSheetsToolForm(props: {
             value={config.selectors.spreadsheetId}
             onChange={(value) => updateSelectors({ spreadsheetId: value })}
             dataFieldPath="config.googleSheets.selectors.spreadsheetId"
+            issueState={documentIdIssue}
           />
         ) : null}
 
@@ -1700,6 +1772,7 @@ export function GoogleSheetsToolForm(props: {
             onChange={(value) => updateSelectors({ spreadsheetId: value })}
             placeholder="Пока без данных"
             dataFieldPath="config.googleSheets.selectors.spreadsheetId"
+            issueState={documentIdIssue}
           />
         ) : null}
       </Stack>
@@ -1735,6 +1808,7 @@ export function GoogleSheetsToolForm(props: {
                   onChange={(value) => updateSelectors({ sheetUrl: value })}
                   placeholder="https://docs.google.com/spreadsheets/d/...#gid=..."
                   dataFieldPath="config.googleSheets.selectors.sheetUrl"
+                  issueState={sheetUrlIssue}
                 />
                 <Button variant="outlined" onClick={applySheetIdFromUrl}>
                   Извлечь ID листа
@@ -1748,6 +1822,7 @@ export function GoogleSheetsToolForm(props: {
                 value={config.selectors.sheetId}
                 onChange={(value) => updateSelectors({ sheetId: value })}
                 dataFieldPath="config.googleSheets.selectors.sheetId"
+                issueState={sheetIdIssue}
               />
             ) : null}
 
@@ -1757,6 +1832,7 @@ export function GoogleSheetsToolForm(props: {
                 value={config.selectors.sheetName}
                 onChange={(value) => updateSelectors({ sheetName: value })}
                 dataFieldPath="config.googleSheets.selectors.sheetName"
+                issueState={sheetNameIssue}
               />
             ) : null}
 
@@ -1767,6 +1843,7 @@ export function GoogleSheetsToolForm(props: {
                 onChange={(value) => updateSelectors({ sheetId: value })}
                 placeholder="Пока без данных"
                 dataFieldPath="config.googleSheets.selectors.sheetId"
+                issueState={sheetIdIssue}
               />
             ) : null}
           </Stack>

@@ -7,12 +7,29 @@ import {
   TextField,
 } from "@mui/material";
 import type { TextDefinitionNode } from "../../../../domain/workflow";
+import { buildFieldAdornment, buildHelperText, buildWarningSx, resolveFieldIssue } from "./fieldIssueUtils";
+import type { Issue } from "../../model/runtime";
 
 export function TextNodeSettingsForm(props: {
   data: TextDefinitionNode;
   onChange: (patch: Partial<TextDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
+  const textIssue = resolveFieldIssue(
+    getIssue("config.text"),
+    "config.text",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const fileIssue = resolveFieldIssue(
+    getIssue("config.fileName"),
+    "config.fileName",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   return (
     <Stack spacing={1.25}>
@@ -38,6 +55,12 @@ export function TextNodeSettingsForm(props: {
           value={data.config.text}
           onChange={(e) => onChange({ text: e.target.value })}
           inputProps={{ "data-field-path": "config.text" }}
+          error={textIssue.isError}
+          helperText={buildHelperText(textIssue)}
+          InputProps={{
+            endAdornment: buildFieldAdornment(textIssue),
+          }}
+          sx={buildWarningSx(textIssue)}
         />
       ) : (
         <TextField
@@ -48,6 +71,12 @@ export function TextNodeSettingsForm(props: {
           onChange={(e) => onChange({ fileName: e.target.value })}
           placeholder="пример.txt"
           inputProps={{ "data-field-path": "config.fileName" }}
+          error={fileIssue.isError}
+          helperText={buildHelperText(fileIssue)}
+          InputProps={{
+            endAdornment: buildFieldAdornment(fileIssue),
+          }}
+          sx={buildWarningSx(fileIssue)}
         />
       )}
     </Stack>

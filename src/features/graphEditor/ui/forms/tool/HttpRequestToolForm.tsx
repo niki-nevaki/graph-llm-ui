@@ -6,6 +6,7 @@ import {
   Box,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   InputLabel,
   MenuItem,
   Select,
@@ -23,6 +24,13 @@ import {
   type HttpRequestToolConfig,
   type ToolDefinitionNode,
 } from "../../../../../domain/workflow";
+import type { Issue } from "../../../model/runtime";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "../fieldIssueUtils";
 
 const METHOD_OPTIONS = [
   "GET",
@@ -228,8 +236,11 @@ function FieldValueInput(props: {
 export function HttpRequestToolForm(props: {
   data: ToolDefinitionNode;
   onChange: (patch: Partial<ToolDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
   const config = useMemo(
     () => mergeHttpRequestConfig(data.config.httpRequest),
     [data.config.httpRequest]
@@ -334,11 +345,24 @@ export function HttpRequestToolForm(props: {
     });
   };
 
+  const methodIssue = resolveFieldIssue(
+    getIssue("config.httpRequest.base.method"),
+    "config.httpRequest.base.method",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const urlIssue = resolveFieldIssue(
+    getIssue("config.httpRequest.base.url"),
+    "config.httpRequest.base.url",
+    focusFieldPath,
+    showFieldIssues
+  );
+
   return (
     <Stack spacing={2} sx={{ pt: 1 }}>
       <Typography variant="subtitle2">Запрос</Typography>
       <Stack spacing={1.5}>
-        <FormControl size="small" fullWidth>
+        <FormControl size="small" fullWidth error={methodIssue.isError}>
           <InputLabel>Метод</InputLabel>
           <Select
             label="Метод"
@@ -347,6 +371,7 @@ export function HttpRequestToolForm(props: {
               updateBase({ method: e.target.value as HttpRequestToolConfig["base"]["method"] })
             }
             inputProps={{ "data-field-path": "config.httpRequest.base.method" }}
+            sx={buildWarningSx(methodIssue)}
           >
             {METHOD_OPTIONS.map((method) => (
               <MenuItem key={method} value={method}>
@@ -354,6 +379,9 @@ export function HttpRequestToolForm(props: {
               </MenuItem>
             ))}
           </Select>
+          {methodIssue.show ? (
+            <FormHelperText>{buildHelperText(methodIssue)}</FormHelperText>
+          ) : null}
         </FormControl>
 
         <TextField
@@ -363,6 +391,12 @@ export function HttpRequestToolForm(props: {
           onChange={(e) => updateBase({ url: e.target.value })}
           fullWidth
           inputProps={{ "data-field-path": "config.httpRequest.base.url" }}
+          error={urlIssue.isError}
+          helperText={buildHelperText(urlIssue)}
+          InputProps={{
+            endAdornment: buildFieldAdornment(urlIssue),
+          }}
+          sx={buildWarningSx(urlIssue)}
         />
       </Stack>
 

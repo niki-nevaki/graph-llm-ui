@@ -7,12 +7,34 @@ import {
   TextField,
 } from "@mui/material";
 import type { LlmDefinitionNode } from "../../../../domain/workflow";
+import {
+  buildFieldAdornment,
+  buildHelperText,
+  buildWarningSx,
+  resolveFieldIssue,
+} from "./fieldIssueUtils";
+import type { Issue } from "../../model/runtime";
 
 export function LlmNodeSettingsForm(props: {
   data: LlmDefinitionNode;
   onChange: (patch: Partial<LlmDefinitionNode["config"]>) => void;
+  getIssue: (fieldPath: string) => Issue | undefined;
+  focusFieldPath: string | null;
+  showFieldIssues: boolean;
 }) {
-  const { data, onChange } = props;
+  const { data, onChange, getIssue, focusFieldPath, showFieldIssues } = props;
+  const apiKeyIssue = resolveFieldIssue(
+    getIssue("config.apiKey"),
+    "config.apiKey",
+    focusFieldPath,
+    showFieldIssues
+  );
+  const modelIssue = resolveFieldIssue(
+    getIssue("config.model"),
+    "config.model",
+    focusFieldPath,
+    showFieldIssues
+  );
 
   return (
     <Stack spacing={1.25}>
@@ -37,6 +59,12 @@ export function LlmNodeSettingsForm(props: {
         value={data.config.apiKey}
         onChange={(e) => onChange({ apiKey: e.target.value })}
         inputProps={{ "data-field-path": "config.apiKey" }}
+        error={apiKeyIssue.isError}
+        helperText={buildHelperText(apiKeyIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(apiKeyIssue),
+        }}
+        sx={buildWarningSx(apiKeyIssue)}
       />
 
       <TextField
@@ -46,6 +74,12 @@ export function LlmNodeSettingsForm(props: {
         value={data.config.model}
         onChange={(e) => onChange({ model: e.target.value })}
         inputProps={{ "data-field-path": "config.model" }}
+        error={modelIssue.isError}
+        helperText={buildHelperText(modelIssue)}
+        InputProps={{
+          endAdornment: buildFieldAdornment(modelIssue),
+        }}
+        sx={buildWarningSx(modelIssue)}
       />
 
       <TextField
