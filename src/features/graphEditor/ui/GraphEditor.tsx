@@ -27,6 +27,7 @@ import { validateGraphOnSubmit } from "../model/graphValidation";
 import { applyGraphExport } from "../model/graphImport";
 import type { NodeRunStatus, Issue, GraphRunState } from "../model/runtime";
 import { runGraph } from "../model/runGraph";
+import type { Execution, NodeRun } from "../model/executionState";
 import { GraphRuntimeProvider } from "../model/runtimeContext";
 import { FlowCanvas } from "./FlowCanvas";
 import { GraphCanvasActions } from "./GraphCanvasActions";
@@ -143,9 +144,9 @@ function GraphEditorInner() {
   const [inspectorWidth, setInspectorWidth] = useState(
     DEFAULT_EDITOR_STATE.inspectorWidth
   );
-  const [inspectorTabId, setInspectorTabId] = useState<"general" | "json">(
-    "general"
-  );
+  const [inspectorTabId, setInspectorTabId] = useState<
+    "general" | "json" | "output"
+  >("general");
   const [inspectorOpen, setInspectorOpen] = useState(
     DEFAULT_EDITOR_STATE.inspectorOpen
   );
@@ -153,9 +154,15 @@ function GraphEditorInner() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [issuesOpen, setIssuesOpen] = useState(false);
   const [showFieldIssues, setShowFieldIssues] = useState(false);
+  const [bottomPanelTab, setBottomPanelTab] = useState<"problems" | "execution">(
+    "problems"
+  );
   const [nodeStatuses, setNodeStatuses] = useState<
     Record<string, NodeRunStatus>
   >({});
+  const [execution, setExecution] = useState<Execution | null>(null);
+  const [nodeRuns, setNodeRuns] = useState<Record<string, NodeRun>>({});
+  const [nodeRunOrder, setNodeRunOrder] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const reconnectEdgeIdRef = useRef<string | null>(null);
 
@@ -224,6 +231,7 @@ function GraphEditorInner() {
       inspectorWidth,
       inspectorTabId,
       issuesOpen,
+      bottomPanelTab,
       showFieldIssues,
     });
     await saveGraph(payload);
@@ -260,6 +268,8 @@ function GraphEditorInner() {
       }
       if (editorState.sidebar.activeTabId === "json") {
         setInspectorTabId("json");
+      } else if (editorState.sidebar.activeTabId === "output") {
+        setInspectorTabId("output");
       } else {
         setInspectorTabId("general");
       }
@@ -267,6 +277,11 @@ function GraphEditorInner() {
 
     if (editorState?.panels?.issuesPanel) {
       setIssuesOpen(Boolean(editorState.panels.issuesPanel.isOpen));
+      if (editorState.panels.issuesPanel.activeTab === "execution") {
+        setBottomPanelTab("execution");
+      } else if (editorState.panels.issuesPanel.activeTab === "problems") {
+        setBottomPanelTab("problems");
+      }
     }
 
     if (editorState?.settings) {
@@ -276,6 +291,9 @@ function GraphEditorInner() {
     setToolDraft(null);
     setFocusFieldPath(null);
     setIssues([]);
+    setExecution(null);
+    setNodeRuns({});
+    setNodeRunOrder([]);
 
     if (editorState?.viewport) {
       const viewport = editorState.viewport;
@@ -441,6 +459,26 @@ function GraphEditorInner() {
       return;
     }
 
+    const executionId = `exec-${Date.now()}`;
+    const executionStartedAt = Date.now();
+    setExecution({
+      id: executionId,
+      status: "running",
+      startedAt: executionStartedAt,
+    });
+    setBottomPanelTab("execution");
+    setNodeRunOrder(validation.plan.nodesInOrder);
+    setNodeRuns(() => {
+      const next: Record<string, NodeRun> = {};
+      validation.plan?.nodesInOrder.forEach((nodeId) => {
+        next[nodeId] = {
+          nodeId,
+          status: "pending",
+        };
+      });
+      return next;
+    });
+
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
@@ -458,16 +496,77 @@ function GraphEditorInner() {
     const result = await runGraph(validation.plan, {
       signal: controller.signal,
       onNodeStatus: (nodeId, status) => {
+        const now = Date.now();
         setNodeStatuses((prev) => ({
           ...prev,
           [nodeId]: status,
         }));
+        setNodeRuns((prev) => {
+          const existing = prev[nodeId] ?? { nodeId, status };
+          if (status === "running") {
+            return {
+              ...prev,
+              [nodeId]: {
+                ...existing,
+                status,
+                startedAt: now,
+              },
+            };
+          }
+          if (status === "succeeded") {
+            const startedAt = existing.startedAt ?? now;
+            const durationMs = Math.max(0, now - startedAt);
+            return {
+              ...prev,
+              [nodeId]: {
+                ...existing,
+                status,
+                startedAt,
+                finishedAt: now,
+                durationMs,
+                output: { ok: true, nodeId },
+                outputSummary: "OK",
+              },
+            };
+          }
+          if (status === "failed") {
+            return {
+              ...prev,
+              [nodeId]: {
+                ...existing,
+                status,
+                finishedAt: now,
+                error: {
+                  message: "Ошибка выполнения",
+                },
+              },
+            };
+          }
+          return {
+            ...prev,
+            [nodeId]: {
+              ...existing,
+              status,
+            },
+          };
+        });
       },
     });
     abortControllerRef.current = null;
 
+    const finishedAt = Date.now();
     if (result.status === "cancelled") {
       setGraphStatus("cancelled");
+      setExecution((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "cancelled",
+              finishedAt,
+              durationMs: finishedAt - prev.startedAt,
+            }
+          : prev
+      );
       setNodeStatuses((prev) => {
         const next = { ...prev };
         Object.keys(next).forEach((id) => {
@@ -477,10 +576,41 @@ function GraphEditorInner() {
         });
         return next;
       });
+      setNodeRuns((prev) => {
+        const next: Record<string, NodeRun> = { ...prev };
+        Object.keys(next).forEach((id) => {
+          if (next[id].status === "pending") {
+            next[id] = { ...next[id], status: "skipped", finishedAt };
+          } else if (next[id].status === "running") {
+            next[id] = { ...next[id], status: "cancelled", finishedAt };
+          }
+        });
+        return next;
+      });
     } else if (result.status === "failed_runtime") {
       setGraphStatus("failed_runtime");
+      setExecution((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "failed",
+              finishedAt,
+              durationMs: finishedAt - prev.startedAt,
+            }
+          : prev
+      );
     } else {
       setGraphStatus("succeeded");
+      setExecution((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "succeeded",
+              finishedAt,
+              durationMs: finishedAt - prev.startedAt,
+            }
+          : prev
+      );
     }
 
     if (result.issues.length > 0) {
@@ -502,9 +632,21 @@ function GraphEditorInner() {
       if (issue.nodeId) {
         setSelectedNodeId(issue.nodeId);
         setInspectorOpen(true);
+        setInspectorTabId("general");
         focusNode(issue.nodeId);
       }
       setFocusFieldPath(issue.fieldPath ?? null);
+    },
+    [focusNode]
+  );
+
+  const onSelectNodeRun = useCallback(
+    (nodeId: string) => {
+      setSelectedNodeId(nodeId);
+      setInspectorOpen(true);
+      setInspectorTabId("output");
+      setFocusFieldPath(null);
+      focusNode(nodeId);
     },
     [focusNode]
   );
@@ -514,6 +656,16 @@ function GraphEditorInner() {
     const n = nodes.find((x) => x.id === selectedNodeId);
     return n ? { id: n.id, data: n.data } : null;
   }, [nodes, selectedNodeId]);
+
+  const nodeRunList = useMemo(
+    () => nodeRunOrder.map((id) => nodeRuns[id]).filter(Boolean) as NodeRun[],
+    [nodeRunOrder, nodeRuns]
+  );
+
+  const selectedNodeRun = useMemo(
+    () => (selectedNodeId ? nodeRuns[selectedNodeId] ?? null : null),
+    [nodeRuns, selectedNodeId]
+  );
 
   const nodeIssuesById = useMemo(() => {
     const map: Record<string, Issue[]> = {};
@@ -699,6 +851,8 @@ function GraphEditorInner() {
             width={inspectorWidth}
             selectedNode={selectedNode}
             activeTabId={inspectorTabId}
+            execution={execution}
+            nodeRun={selectedNodeRun}
             focusFieldPath={focusFieldPath}
             fieldIssueMap={fieldIssueMap}
             showFieldIssues={showFieldIssues}
@@ -719,6 +873,8 @@ function GraphEditorInner() {
         <IssuesPanel
           open={issuesOpen}
           status={graphStatus}
+          activeTab={bottomPanelTab}
+          onTabChange={setBottomPanelTab}
           issues={issues}
           errorsCount={errorsCount}
           warningsCount={warningsCount}
@@ -726,8 +882,11 @@ function GraphEditorInner() {
           selectedNodeId={selectedNodeId}
           nodes={nodes}
           edges={edges}
+          execution={execution}
+          nodeRuns={nodeRunList}
           onToggleOpen={() => setIssuesOpen((prev) => !prev)}
           onSelectIssue={onSelectIssue}
+          onSelectNodeRun={onSelectNodeRun}
         />
       </Box>
     </GraphRuntimeProvider>

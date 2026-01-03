@@ -26,6 +26,7 @@ import type {
   ToolDefinitionNode,
 } from "../../../domain/workflow";
 import type { Issue } from "../model/runtime";
+import type { Execution, NodeRun } from "../model/executionState";
 
 import { AgentNodeSettingsForm } from "./forms/AgentNodeSettingsForm";
 import { LlmNodeSettingsForm } from "./forms/LlmNodeSettingsForm";
@@ -43,7 +44,9 @@ type Props = {
   maxWidth?: number;
 
   selectedNode: { id: string; data: DefinitionNode } | null;
-  activeTabId?: "general" | "json";
+  activeTabId?: "general" | "json" | "output";
+  execution?: Execution | null;
+  nodeRun?: NodeRun | null;
   focusFieldPath?: string | null;
   fieldIssueMap?: Record<string, Issue>;
   showFieldIssues?: boolean;
@@ -54,7 +57,7 @@ type Props = {
 
   onClose: () => void;
   onUpdate: (nodeId: string, nextData: DefinitionNode) => void;
-  onTabChange?: (tabId: "general" | "json") => void;
+  onTabChange?: (tabId: "general" | "json" | "output") => void;
   onWidthChange: (w: number) => void;
 };
 
@@ -84,6 +87,8 @@ export function NodeInspector({
 
   selectedNode,
   activeTabId,
+  execution,
+  nodeRun,
   focusFieldPath,
   fieldIssueMap = {},
   showFieldIssues = false,
@@ -96,9 +101,11 @@ export function NodeInspector({
 }: Props) {
   // Tabs: 0=General(+Settings), 1=JSON
   const [tab, setTab] = useState(0);
-  const lastActiveTabId = useRef<"general" | "json">("general");
-  const tabIdFromIndex = (index: number) => (index === 1 ? "json" : "general");
-  const tabIndexFromId = (id: "general" | "json") => (id === "json" ? 1 : 0);
+  const lastActiveTabId = useRef<"general" | "json" | "output">("general");
+  const tabIdFromIndex = (index: number) =>
+    index === 2 ? "output" : index === 1 ? "json" : "general";
+  const tabIndexFromId = (id: "general" | "json" | "output") =>
+    id === "output" ? 2 : id === "json" ? 1 : 0;
 
   // Reset tab when selection changes
   useEffect(() => {
@@ -385,6 +392,7 @@ export function NodeInspector({
               >
                 <Tab label="Общее" />
                 <Tab label="JSON" />
+                <Tab label="Вывод" />
               </Tabs>
 
               {/* Body scroll ONLY inside panel */}
@@ -467,6 +475,61 @@ export function NodeInspector({
                       },
                     }}
                   />
+                </TabPanel>
+
+                <TabPanel value={tab} index={2} animationKey={animationKey}>
+                  <Stack spacing={1}>
+                    {!execution ? (
+                      <Typography variant="body2" color="text.secondary">
+                        Запусков пока нет. Нажмите ▶ Run.
+                      </Typography>
+                    ) : !nodeRun ? (
+                      <Typography variant="body2" color="text.secondary">
+                        Нет результата для этой ноды в текущем запуске.
+                      </Typography>
+                    ) : nodeRun.status === "running" ? (
+                      <Typography variant="body2" color="text.secondary">
+                        Выполняется…
+                      </Typography>
+                    ) : nodeRun.error ? (
+                      <Stack spacing={0.5}>
+                        <Typography variant="subtitle2" color="error.main">
+                          Ошибка
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {nodeRun.error.message}
+                        </Typography>
+                        {nodeRun.error.details ? (
+                          <Typography variant="body2" color="text.secondary">
+                            {nodeRun.error.details}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    ) : nodeRun.output !== undefined ? (
+                      typeof nodeRun.output === "string" ? (
+                        <Typography variant="body2">{nodeRun.output}</Typography>
+                      ) : (
+                        <Box
+                          component="pre"
+                          sx={{
+                            bgcolor: "action.hover",
+                            p: 1.5,
+                            borderRadius: 1,
+                            fontSize: 12,
+                            overflow: "auto",
+                          }}
+                        >
+                          {JSON.stringify(nodeRun.output, null, 2)}
+                        </Box>
+                      )
+                    ) : nodeRun.outputSummary ? (
+                      <Typography variant="body2">{nodeRun.outputSummary}</Typography>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Нет результата для этой ноды в текущем запуске.
+                      </Typography>
+                    )}
+                  </Stack>
                 </TabPanel>
               </Box>
             </>

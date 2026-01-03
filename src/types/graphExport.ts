@@ -44,13 +44,13 @@ export type GraphEditorStateExport = {
   };
   sidebar: {
     isOpen: boolean;
-    activeTabId?: string | null;
+    activeTabId?: "general" | "json" | "output" | null;
     width?: number;
   };
   panels: {
     issuesPanel: {
       isOpen: boolean;
-      activeTab?: string | null;
+      activeTab?: "problems" | "execution" | null;
     };
   };
   settings?: {

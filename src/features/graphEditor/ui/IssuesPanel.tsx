@@ -2,8 +2,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import SearchIcon from "@mui/icons-material/Search";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import {
   Box,
   Button,
@@ -26,6 +31,7 @@ import type { Edge, Node } from "@xyflow/react";
 import { useMemo, useState, useEffect } from "react";
 
 import type { DefinitionNode } from "../../../domain/workflow";
+import type { Execution, NodeRun } from "../model/executionState";
 import type { GraphRunState, Issue } from "../model/runtime";
 import { useMotion } from "../../../app/providers/MotionProvider";
 
@@ -112,9 +118,44 @@ const formatValue = (value: unknown): string => {
   return "пусто";
 };
 
+const formatDuration = (ms?: number) => {
+  if (!ms || ms <= 0) return "—";
+  if (ms < 1000) return `${ms}мс`;
+  return `${(ms / 1000).toFixed(2)}с`;
+};
+
+const getNodeRunMessage = (run: NodeRun) => {
+  if (run.status === "running") return "Выполняется…";
+  if (run.status === "pending") return "В очереди";
+  if (run.status === "skipped") return "Пропущено";
+  if (run.status === "cancelled") return "Отменено";
+  if (run.status === "failed") return run.error?.message ?? "Ошибка";
+  return run.outputSummary ?? "OK";
+};
+
+const renderRunStatusIcon = (run: NodeRun) => {
+  switch (run.status) {
+    case "running":
+      return <AutorenewIcon fontSize="small" color="info" />;
+    case "succeeded":
+      return <CheckCircleOutlineIcon fontSize="small" color="success" />;
+    case "failed":
+      return <ErrorOutlineIcon fontSize="small" color="error" />;
+    case "skipped":
+      return <RemoveCircleOutlineIcon fontSize="small" color="warning" />;
+    case "cancelled":
+      return <CancelOutlinedIcon fontSize="small" color="disabled" />;
+    case "pending":
+    default:
+      return <HourglassEmptyIcon fontSize="small" color="disabled" />;
+  }
+};
+
 type Props = {
   open: boolean;
   status: GraphRunState;
+  activeTab: "problems" | "execution";
+  onTabChange: (tab: "problems" | "execution") => void;
   issues: Issue[];
   errorsCount: number;
   warningsCount: number;
@@ -122,13 +163,18 @@ type Props = {
   selectedNodeId: string | null;
   nodes: Array<Node<DefinitionNode>>;
   edges: Edge[];
+  execution: Execution | null;
+  nodeRuns: NodeRun[];
   onToggleOpen: () => void;
   onSelectIssue: (issue: Issue) => void;
+  onSelectNodeRun: (nodeId: string) => void;
 };
 
 export function IssuesPanel({
   open,
   status,
+  activeTab,
+  onTabChange,
   issues,
   errorsCount,
   warningsCount,
@@ -136,14 +182,18 @@ export function IssuesPanel({
   selectedNodeId,
   nodes,
   edges,
+  execution,
+  nodeRuns,
   onToggleOpen,
   onSelectIssue,
+  onSelectNodeRun,
 }: Props) {
   const [tab, setTab] = useState(0);
   const [query, setQuery] = useState("");
   const [onlySelected, setOnlySelected] = useState(false);
   const { reducedMotion } = useMotion();
   const [pulseErrors, setPulseErrors] = useState(false);
+  const isExecutionTab = activeTab === "execution";
 
   useEffect(() => {
     if (errorsCount > 0 && !reducedMotion) {
@@ -211,6 +261,19 @@ export function IssuesPanel({
     });
     return items;
   }, [filteredIssues, nodeMap]);
+
+  const filteredNodeRuns = useMemo(() => {
+    if (!execution) return [];
+    const list = nodeRuns.filter((run) => {
+      if (onlySelected && selectedNodeId) {
+        return run.nodeId === selectedNodeId;
+      }
+      if (!query.trim()) return true;
+      const nodeName = nodeMap.get(run.nodeId)?.data.name ?? "";
+      return nodeName.toLowerCase().includes(query.toLowerCase());
+    });
+    return list;
+  }, [execution, nodeRuns, onlySelected, selectedNodeId, query, nodeMap]);
 
   const isRunning = status === "running" || status === "validating";
   const collapsedHeight = 44;
@@ -322,11 +385,23 @@ export function IssuesPanel({
 
       {open ? (
         <>
+          <Tabs
+            value={activeTab}
+            onChange={(_, next) => onTabChange(next as "problems" | "execution")}
+            variant="fullWidth"
+            sx={{ px: 1, borderBottom: 1, borderColor: "divider" }}
+          >
+            <Tab value="problems" label="Проблемы" />
+            <Tab value="execution" label="Выполнение" />
+          </Tabs>
+
           <Box sx={{ px: 2, pt: 1 }}>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <TextField
                 size="small"
-                placeholder="Поиск по проблемам"
+                placeholder={
+                  isExecutionTab ? "Поиск по нодам" : "Поиск по проблемам"
+                }
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 InputProps={{
@@ -353,146 +428,240 @@ export function IssuesPanel({
             </Stack>
           </Box>
 
-          <Tabs
-            value={tab}
-            onChange={(_, next) => setTab(next)}
-            variant="fullWidth"
-            sx={{ px: 1 }}
-          >
-            <Tab label={`Ошибки (${errorsCount})`} />
-            <Tab label={`Предупреждения (${warningsCount})`} />
-            <Tab label="Логи" />
-          </Tabs>
-
-          <Divider />
-
-          <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-            {tab === 2 ? (
-              <Box sx={{ px: 2, py: 2 }}>
-                <Typography variant="caption" color="text.secondary">
-                  Логи выполнения появятся после запуска.
-                </Typography>
-              </Box>
-            ) : groupedIssues.length === 0 ? (
-              <Box sx={{ px: 2, py: 2 }}>
-                <Typography variant="caption" color="text.secondary">
-                  Здесь появятся проблемы по мере проверки графа.
-                </Typography>
-              </Box>
-            ) : (
-              <List dense disablePadding>
-                {groupedIssues.map((item, index) => {
-                  if (item.type === "header") {
-                    return (
-                      <ListItem
-                        key={`group-${index}`}
-                        sx={{ bgcolor: "action.hover" }}
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          {item.label}
-                        </Typography>
-                      </ListItem>
-                    );
-                  }
-
-                  const issue = item.issue;
-                  const node = issue.nodeId ? nodeMap.get(issue.nodeId) : undefined;
-                  const edge = issue.edgeId ? edgeMap.get(issue.edgeId) : undefined;
-                  const fieldLabel = issue.fieldPath
-                    ? FIELD_LABELS[issue.fieldPath] ?? issue.fieldPath
-                    : undefined;
-                  const fieldValue = issue.fieldPath && node
-                    ? getValueByPath(node.data, issue.fieldPath)
-                    : undefined;
-                  const isSecret = issue.fieldPath
-                    ? isSecretFieldPath(issue.fieldPath)
-                    : false;
-                  const valueLabel = issue.fieldPath
-                    ? isSecret
-                      ? fieldValue
-                        ? "(скрыто)"
-                        : "(не задано)"
-                      : formatValue(fieldValue)
-                    : undefined;
-                  const edgeContext =
-                    edge && nodeMap.get(edge.source) && nodeMap.get(edge.target)
-                      ? `${nodeMap.get(edge.source)?.data.name ?? edge.source} -> ${
-                          nodeMap.get(edge.target)?.data.name ?? edge.target
-                        }`
-                      : undefined;
-                  const edgePorts =
-                    edge && (edge.sourceHandle || edge.targetHandle)
-                      ? `${edge.sourceHandle ?? "out"} -> ${
-                          edge.targetHandle ?? "in"
-                        }`
-                      : undefined;
-
-                  return (
-                    <ListItem key={issue.id} divider>
-                      <ListItemText
-                        primary={
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            alignItems="center"
-                          >
-                            {issue.severity === "error" ? (
-                              <ErrorOutlineIcon color="error" fontSize="small" />
-                            ) : (
-                              <WarningAmberIcon color="warning" fontSize="small" />
-                            )}
-                            {issue.details || issue.fixHint ? (
-                              <Tooltip
-                                title={issue.details ?? issue.fixHint ?? ""}
-                                arrow
+          {isExecutionTab ? (
+            <>
+              <Divider />
+              <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+                {!execution ? (
+                  <Box sx={{ px: 2, py: 2 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Запусков пока нет. Нажмите ▶ Run.
+                    </Typography>
+                  </Box>
+                ) : filteredNodeRuns.length === 0 ? (
+                  <Box sx={{ px: 2, py: 2 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Нет выполненных нод для текущего запуска.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <List dense disablePadding>
+                    {filteredNodeRuns.map((run) => {
+                      const nodeName =
+                        nodeMap.get(run.nodeId)?.data.name ?? run.nodeId;
+                      return (
+                        <ListItem key={run.nodeId} divider>
+                          <ListItemText
+                            primary={
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
                               >
+                                {renderRunStatusIcon(run)}
                                 <Typography variant="body2">
-                                  {issue.message}
+                                  {nodeName}
                                 </Typography>
-                              </Tooltip>
-                            ) : (
-                              <Typography variant="body2">
-                                {issue.message}
-                              </Typography>
-                            )}
-                          </Stack>
-                        }
-                        secondary={
-                          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-                            {fieldLabel ? (
-                              <Typography variant="caption" color="text.secondary">
-                                Поле: {fieldLabel} - {valueLabel}
-                              </Typography>
-                            ) : null}
-                            {edgeContext ? (
-                              <Typography variant="caption" color="text.secondary">
-                                Связь: {edgeContext}
-                                {edgePorts ? ` (${edgePorts})` : ""}
-                              </Typography>
-                            ) : null}
-                            {issue.fixHint ? (
-                              <Typography variant="caption" color="text.secondary">
-                                {issue.fixHint}
-                              </Typography>
-                            ) : null}
-                          </Stack>
-                        }
-                      />
-                      <Box sx={{ ml: 2, flexShrink: 0 }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => onSelectIssue(issue)}
-                        >
-                          Перейти
-                        </Button>
-                      </Box>
-                    </ListItem>
-                  );
-                })}
-              </List>
-            )}
-          </Box>
+                              </Stack>
+                            }
+                            secondary={
+                              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {getNodeRunMessage(run)}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  Длительность: {formatDuration(run.durationMs)}
+                                </Typography>
+                              </Stack>
+                            }
+                          />
+                          <Box sx={{ ml: 2, flexShrink: 0 }}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => onSelectNodeRun(run.nodeId)}
+                            >
+                              Перейти
+                            </Button>
+                          </Box>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                )}
+              </Box>
+            </>
+          ) : (
+            <>
+              <Tabs
+                value={tab}
+                onChange={(_, next) => setTab(next)}
+                variant="fullWidth"
+                sx={{ px: 1 }}
+              >
+                <Tab label={`Ошибки (${errorsCount})`} />
+                <Tab label={`Предупреждения (${warningsCount})`} />
+                <Tab label="Логи" />
+              </Tabs>
+
+              <Divider />
+
+              <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+                {tab === 2 ? (
+                  <Box sx={{ px: 2, py: 2 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Логи выполнения появятся после запуска.
+                    </Typography>
+                  </Box>
+                ) : groupedIssues.length === 0 ? (
+                  <Box sx={{ px: 2, py: 2 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Здесь появятся проблемы по мере проверки графа.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <List dense disablePadding>
+                    {groupedIssues.map((item, index) => {
+                      if (item.type === "header") {
+                        return (
+                          <ListItem
+                            key={`group-${index}`}
+                            sx={{ bgcolor: "action.hover" }}
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              {item.label}
+                            </Typography>
+                          </ListItem>
+                        );
+                      }
+
+                      const issue = item.issue;
+                      const node = issue.nodeId
+                        ? nodeMap.get(issue.nodeId)
+                        : undefined;
+                      const edge = issue.edgeId ? edgeMap.get(issue.edgeId) : undefined;
+                      const fieldLabel = issue.fieldPath
+                        ? FIELD_LABELS[issue.fieldPath] ?? issue.fieldPath
+                        : undefined;
+                      const fieldValue = issue.fieldPath && node
+                        ? getValueByPath(node.data, issue.fieldPath)
+                        : undefined;
+                      const isSecret = issue.fieldPath
+                        ? isSecretFieldPath(issue.fieldPath)
+                        : false;
+                      const valueLabel = issue.fieldPath
+                        ? isSecret
+                          ? fieldValue
+                            ? "(скрыто)"
+                            : "(не задано)"
+                          : formatValue(fieldValue)
+                        : undefined;
+                      const edgeContext =
+                        edge &&
+                        nodeMap.get(edge.source) &&
+                        nodeMap.get(edge.target)
+                          ? `${
+                              nodeMap.get(edge.source)?.data.name ?? edge.source
+                            } -> ${
+                              nodeMap.get(edge.target)?.data.name ?? edge.target
+                            }`
+                          : undefined;
+                      const edgePorts =
+                        edge && (edge.sourceHandle || edge.targetHandle)
+                          ? `${edge.sourceHandle ?? "out"} -> ${
+                              edge.targetHandle ?? "in"
+                            }`
+                          : undefined;
+
+                      return (
+                        <ListItem key={issue.id} divider>
+                          <ListItemText
+                            primary={
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                              >
+                                {issue.severity === "error" ? (
+                                  <ErrorOutlineIcon
+                                    color="error"
+                                    fontSize="small"
+                                  />
+                                ) : (
+                                  <WarningAmberIcon
+                                    color="warning"
+                                    fontSize="small"
+                                  />
+                                )}
+                                {issue.details || issue.fixHint ? (
+                                  <Tooltip
+                                    title={issue.details ?? issue.fixHint ?? ""}
+                                    arrow
+                                  >
+                                    <Typography variant="body2">
+                                      {issue.message}
+                                    </Typography>
+                                  </Tooltip>
+                                ) : (
+                                  <Typography variant="body2">
+                                    {issue.message}
+                                  </Typography>
+                                )}
+                              </Stack>
+                            }
+                            secondary={
+                              <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                                {fieldLabel ? (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    Поле: {fieldLabel} - {valueLabel}
+                                  </Typography>
+                                ) : null}
+                                {edgeContext ? (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    Связь: {edgeContext}
+                                    {edgePorts ? ` (${edgePorts})` : ""}
+                                  </Typography>
+                                ) : null}
+                                {issue.fixHint ? (
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                  >
+                                    {issue.fixHint}
+                                  </Typography>
+                                ) : null}
+                              </Stack>
+                            }
+                          />
+                          <Box sx={{ ml: 2, flexShrink: 0 }}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => onSelectIssue(issue)}
+                            >
+                              Перейти
+                            </Button>
+                          </Box>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                )}
+              </Box>
+            </>
+          )}
         </>
       ) : null}
     </Box>

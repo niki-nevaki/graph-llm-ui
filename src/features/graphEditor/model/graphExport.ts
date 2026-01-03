@@ -14,9 +14,10 @@ type BuildGraphExportInput = {
   selectedNodeId: string | null;
   inspectorOpen: boolean;
   inspectorWidth: number;
-  inspectorTabId?: string | null;
+  inspectorTabId?: "general" | "json" | "output" | null;
   issuesOpen: boolean;
   showFieldIssues: boolean;
+  bottomPanelTab?: "problems" | "execution";
 };
 
 const sortById = <T extends { id: string }>(items: T[]) =>
@@ -74,7 +75,7 @@ export function buildGraphExportPayload(
     panels: {
       issuesPanel: {
         isOpen: input.issuesOpen,
-        activeTab: null,
+        activeTab: input.bottomPanelTab ?? null,
       },
     },
     settings: {
